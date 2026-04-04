@@ -1,99 +1,219 @@
-from groq import Groq
-from app.core.config import GROQ_API_KEY, LLM_MODEL, CHROMA_PATH, EMBEDDING_MODEL
+from app.services.llm_service import llm_service
+from app.services.retrieval_service import retrieval_service
 from app.core.rulebook import RULES
-from sentence_transformers import SentenceTransformer
-import chromadb
+from app.services.document_registry import document_registry
+from app.core.logger import logger
 import json
 
-client = Groq(api_key=GROQ_API_KEY)
-embedding_model = SentenceTransformer(EMBEDDING_MODEL)
-chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 
-def get_embedding(text: str) -> list:
-    return embedding_model.encode(text).tolist()
+class AuditService:
 
-def retrieve_for_rule(collection, rule: dict, top_k=3) -> str:
-    query = rule["name"] + " " + rule["description"]
-    embedding = get_embedding(query)
-    results = collection.query(query_embeddings=[embedding], n_results=top_k)
-    return "\n\n".join(results["documents"][0])
+    def check_rule(
+        self,
+        document_id: str,
+        rule: dict
+    ):
 
-def check_rule(rule: dict, context: str) -> dict:
-    prompt = f"""You are a contract compliance auditor.
+        logger.info(
+            f"Checking rule '{rule['name']}' for document {document_id}"
+        )
 
-Your job is to check whether a specific clause exists and is compliant in the contract excerpt below.
+        try:
 
-Rule to check: {rule["name"]}
-Rule description: {rule["description"]}
+            context = "\n\n".join(
 
-Contract excerpt:
+                retrieval_service.retrieve(
+
+                    document_id,
+
+                    rule["name"] + " " + rule["description"]
+
+                )
+
+            )
+
+        except Exception as e:
+
+            logger.error(
+                f"Retrieval failed for {document_id}: {str(e)}"
+            )
+
+            return {
+
+                "status": "WARN",
+
+                "severity": "MEDIUM",
+
+                "confidence": 50,
+
+                "finding": "Document retrieval failed",
+
+                "citation": "Not found",
+
+                "recommendation": "Retry ingestion"
+
+            }
+
+        prompt = f"""
+You are a senior contract compliance auditor.
+
+Analyze whether contract satisfies rule.
+
+RULE:
+{rule["name"]}
+
+DESCRIPTION:
+{rule["description"]}
+
+CONTRACT:
 {context}
 
-Respond ONLY with a valid JSON object in this exact format, nothing else:
+Return ONLY valid JSON:
+
 {{
-  "status": "PASS" or "FAIL" or "WARN",
-  "finding": "One sentence explaining what you found or did not find.",
-  "citation": "Exact short quote from the contract if found, or 'Not found' if missing."
-}}"""
+"status":"PASS or FAIL or WARN",
 
-    response = client.chat.completions.create(
-        model=LLM_MODEL,
-        messages=[{"role": "user", "content": prompt}]
-    )
+"severity":"LOW or MEDIUM or HIGH or CRITICAL",
 
-    raw = response.choices[0].message.content.strip()
+"confidence": number between 0-100,
 
-    try:
-        clean = raw.replace("```json", "").replace("```", "").strip()
-        return json.loads(clean)
-    except Exception:
+"finding":"clear business explanation",
+
+"citation":"exact clause or Not found",
+
+"recommendation":"how to fix problem"
+}}
+"""
+
+        try:
+
+            response = llm_service.generate(prompt)
+
+            clean = response.replace(
+                "```json", ""
+            ).replace(
+                "```", ""
+            ).strip()
+
+            parsed = json.loads(clean)
+
+            logger.info(
+                f"Rule checked successfully: {rule['name']}"
+            )
+
+            return parsed
+
+        except Exception as e:
+
+            logger.error(
+                f"AI parsing failed for rule {rule['name']} : {str(e)}"
+            )
+
+            return {
+
+                "status": "WARN",
+
+                "severity": "MEDIUM",
+
+                "confidence": 60,
+
+                "finding": "AI response parsing failed",
+
+                "citation": "Not found",
+
+                "recommendation": "Manual review required"
+
+            }
+
+
+    def risk_score(self, results):
+
+        score = 0
+
+        for r in results:
+
+            if r["status"] == "FAIL":
+
+                if r["severity"] == "CRITICAL":
+
+                    score += 25
+
+                elif r["severity"] == "HIGH":
+
+                    score += 15
+
+                elif r["severity"] == "MEDIUM":
+
+                    score += 8
+
+                else:
+
+                    score += 3
+
+            elif r["status"] == "WARN":
+
+                score += 5
+
+        return min(score, 100)
+
+
+    def run_audit(self, document_id: str):
+
+        logger.info(
+            f"Starting audit for document {document_id}"
+        )
+
+        results = []
+
+        for rule in RULES:
+
+            result = self.check_rule(
+
+                document_id,
+
+                rule
+
+            )
+
+            results.append({
+
+                "rule_id": rule["id"],
+
+                "rule_name": rule["name"],
+
+                "status": result.get("status"),
+
+                "severity": result.get("severity"),
+
+                "confidence": result.get("confidence"),
+
+                "finding": result.get("finding"),
+
+                "citation": result.get("citation"),
+
+                "recommendation": result.get("recommendation")
+
+            })
+
+        score = self.risk_score(results)
+
+        document_registry.mark_audited(document_id)
+
+        logger.info(
+            f"Audit completed for {document_id} | Risk Score: {score}"
+        )
+
         return {
-            "status": "WARN",
-            "finding": "Could not parse AI response.",
-            "citation": "Not found"
+
+            "document": document_id,
+
+            "risk_score": score,
+
+            "rules_checked": len(results),
+
+            "results": results
+
         }
 
-def calculate_risk_score(results: list) -> int:
-    fail_count = sum(1 for r in results if r["status"] == "FAIL")
-    warn_count = sum(1 for r in results if r["status"] == "WARN")
-    total = len(results)
-    score = int(((fail_count * 2 + warn_count) / (total * 2)) * 100)
-    return min(score, 100)
 
-def run_audit(doc_id: str) -> dict:
-    collection_name = doc_id.replace(".pdf", "")
-
-    try:
-        collection = chroma_client.get_collection(name=collection_name)
-    except Exception:
-        return {"error": f"Document '{doc_id}' not found. Please upload it first."}
-
-    audit_results = []
-
-    for rule in RULES:
-        context = retrieve_for_rule(collection, rule)
-        result = check_rule(rule, context)
-        audit_results.append({
-            "rule_id": rule["id"],
-            "rule_name": rule["name"],
-            "status": result.get("status", "WARN"),
-            "finding": result.get("finding", ""),
-            "citation": result.get("citation", "Not found")
-        })
-
-    risk_score = calculate_risk_score(audit_results)
-    pass_count = sum(1 for r in audit_results if r["status"] == "PASS")
-    fail_count = sum(1 for r in audit_results if r["status"] == "FAIL")
-    warn_count = sum(1 for r in audit_results if r["status"] == "WARN")
-
-    return {
-        "document": doc_id,
-        "risk_score": risk_score,
-        "summary": {
-            "total_rules": len(RULES),
-            "passed": pass_count,
-            "failed": fail_count,
-            "warnings": warn_count
-        },
-        "results": audit_results
-    }
+audit_service = AuditService()
