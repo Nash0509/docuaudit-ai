@@ -1,96 +1,53 @@
-import { FileText } from "lucide-react";
+import { motion } from 'framer-motion';
+import Button from './Button';
 
-export default function EmptyState({
-  title,
-
-  description,
-
-  actionText,
-
-  onAction,
-}) {
+export default function EmptyState({ icon, title, description, actionText, onAction, style }) {
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
       style={{
-        background: "#11182799",
-
-        border: "1px solid #ffffff0d",
-
-        borderRadius: "16px",
-
-        padding: "50px",
-
-        textAlign: "center",
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--bg-surface)',
+        border: '1px dashed var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '60px 20px',
+        textAlign: 'center',
+        ...style
       }}
     >
-      <div
-        style={{
-          background: "rgba(255,255,255,0.04)",
-
-          width: "60px",
-
-          height: "60px",
-
-          borderRadius: "14px",
-
-          display: "flex",
-
-          alignItems: "center",
-
-          justifyContent: "center",
-
-          margin: "auto",
-
-          marginBottom: "18px",
-        }}
-      >
-        <FileText size={26} />
+      <div style={{
+        width: '48px',
+        height: '48px',
+        borderRadius: '12px',
+        background: 'var(--bg-surface-hover)',
+        border: '1px solid var(--border)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '20px',
+        color: 'var(--text-muted)'
+      }}>
+        {icon}
       </div>
-
-      <div
-        style={{
-          fontSize: "18px",
-
-          fontWeight: "600",
-
-          marginBottom: "6px",
-        }}
-      >
+      
+      <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: '0 0 8px 0' }}>
         {title}
-      </div>
-
-      <div
-        style={{
-          fontSize: "14px",
-
-          color: "#64748b",
-
-          marginBottom: "20px",
-        }}
-      >
+      </h3>
+      
+      <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '0 0 24px 0', maxWidth: '300px', lineHeight: '1.5' }}>
         {description}
-      </div>
-
-      <button
-        onClick={onAction}
-        style={{
-          background: "linear-gradient(135deg,#00d4aa,#0ea5e9)",
-
-          border: "none",
-
-          padding: "11px 26px",
-
-          borderRadius: "10px",
-
-          cursor: "pointer",
-
-          fontWeight: "600",
-
-          color: "#020617",
-        }}
-      >
-        {actionText}
-      </button>
-    </div>
+      </p>
+      
+      {actionText && onAction && (
+        <Button variant="secondary" onClick={onAction}>
+          {actionText}
+        </Button>
+      )}
+    </motion.div>
   );
 }

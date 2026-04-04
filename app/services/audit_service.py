@@ -1,7 +1,6 @@
 from app.services.llm_service import llm_service
 from app.services.retrieval_service import retrieval_service
 from app.core.rulebook import RULES
-from app.services.document_registry import document_registry
 from app.core.logger import logger
 import json
 
@@ -137,58 +136,35 @@ Return ONLY valid JSON:
 
 
 
-    def run_audit(self, document_id: str):
-
-        logger.info(
-            f"Starting audit {document_id}"
-        )
-
-
-        existing = document_registry.get_audit_result(
-            document_id
-        )
-
-        if existing:
-
-            logger.info(
-                f"Audit already exists {document_id}"
-            )
-
-            return existing
-
-
+    def run_audit(self, document_id: str, rule_ids: list, db):
+        from app.models.rule import Rule
+        logger.info(f"Starting audit {document_id} with rule_ids={rule_ids}")
         results=[]
 
+        if rule_ids:
+            rules_to_run = db.query(Rule).filter(Rule.id.in_(rule_ids)).all()
+        else:
+            # If no specific rules selected, maybe run default templates
+            rules_to_run = db.query(Rule).filter(Rule.is_template == True).all()
 
-        for rule in RULES:
-
-            result=self.check_rule(
-
-                document_id,
-
-                rule
-
-            )
-
+        for rule in rules_to_run:
+            # check_rule expects a typical dictionary struct
+            rule_dict = {
+                "id": rule.id,
+                "name": rule.name,
+                "description": rule.description
+            }
+            result = self.check_rule(document_id, rule_dict)
 
             results.append({
-
-                "rule_id":rule["id"],
-
-                "rule_name":rule["name"],
-
-                "status":result.get("status"),
-
-                "severity":result.get("severity"),
-
-                "confidence":result.get("confidence"),
-
-                "finding":result.get("finding"),
-
-                "citation":result.get("citation"),
-
-                "recommendation":result.get("recommendation")
-
+                "rule_id": rule.id,
+                "rule_name": rule.name,
+                "status": result.get("status"),
+                "severity": result.get("severity", rule.severity),
+                "confidence": result.get("confidence"),
+                "finding": result.get("finding"),
+                "citation": result.get("citation"),
+                "recommendation": result.get("recommendation")
             })
 
 
@@ -208,20 +184,7 @@ Return ONLY valid JSON:
         }
 
 
-        document_registry.store_audit_result(
-
-            document_id,
-
-            audit_result
-
-        )
-
-
-        logger.info(
-            f"Audit finished {document_id}"
-        )
-
-
+        logger.info(f"Audit finished {document_id}")
         return audit_result
 
 

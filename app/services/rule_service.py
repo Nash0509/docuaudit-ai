@@ -1,43 +1,57 @@
-import json
+from sqlalchemy.orm import Session
+from app.models.rule import Rule
 
-class RuleService:
+DEFAULT_TEMPLATES = [
+    {
+        "name": "Payment Terms",
+        "description": "Contract must specify clear payment terms including due date or net days (e.g. Net 30).",
+        "severity": "HIGH",
+        "category": "Financial",
+        "industry": "Small Business",
+        "is_template": True
+    },
+    {
+        "name": "Limitation of Liability",
+        "description": "Contract must include a clause that caps the maximum liability of either party.",
+        "severity": "CRITICAL",
+        "category": "Risk",
+        "industry": "Manufacturing",
+        "is_template": True
+    },
+    {
+        "name": "IP Ownership",
+        "description": "Contract must clearly state who owns any intellectual property created during the engagement.",
+        "severity": "HIGH",
+        "category": "Intellectual Property",
+        "industry": "Vendor agreements",
+        "is_template": True
+    },
+    {
+        "name": "Termination Notice",
+        "description": "Contract must specify a notice period required to terminate the agreement (e.g. 30 days).",
+        "severity": "MEDIUM",
+        "category": "Operations",
+        "industry": "Employment",
+        "is_template": True
+    },
+    {
+        "name": "Data Privacy Compliance",
+        "description": "Contract must clearly state how customer data will be managed and protected.",
+        "severity": "CRITICAL",
+        "category": "Compliance",
+        "industry": "SaaS contracts",
+        "is_template": True
+    }
+]
 
-    def get_default_rules(self):
+def seed_default_rules(db: Session):
+    existing_templates = db.query(Rule).filter(Rule.is_template == True).count()
+    if existing_templates == 0:
+        rules = [Rule(**template_data) for template_data in DEFAULT_TEMPLATES]
+        db.add_all(rules)
+        db.commit()
 
-        with open("rules/default.json") as f:
-
-            return json.load(f)
-
-
-    def get_industry_rules(self,industry):
-
-        with open("rules/industry.json") as f:
-
-            data=json.load(f)
-
-        return data.get(industry,[])
-
-
-    def get_user_rules(self,user_id):
-
-        return []
-
-
-    def get_rules(self,industry=None):
-
-        rules=[]
-
-        rules.extend(self.get_default_rules())
-
-        if industry:
-
-            rules.extend(
-
-                self.get_industry_rules(industry)
-
-            )
-
-        return rules
-
-
-rule_service = RuleService()
+def get_merged_rules(db: Session, user_id: int):
+    return db.query(Rule).filter(
+        (Rule.is_template == True) | (Rule.user_id == user_id)
+    ).all()

@@ -1282,3 +1282,16 @@
 2026-04-04 14:23:15,152 | ERROR | docuaudit | Failed fetching audit 20b5aedd-0986-4492-a2af-26aa92f678fa: 404: Audit result not found
 2026-04-04 14:23:15,154 | ERROR | docuaudit | Failed fetching audit 20b5aedd-0986-4492-a2af-26aa92f678fa: 404: Audit result not found
 2026-04-04 14:23:27,978 | INFO | docuaudit | Document fully deleted 20b5aedd-0986-4492-a2af-26aa92f678fa
+2026-04-05 00:07:50,447 | INFO | docuaudit | Starting audit 8ee55783-95dd-4ad8-84e0-ca0ed13ec97d with rule_ids=['d87aeb3a-df0e-41ac-9274-ae73d3c0221b', '85a4af86-0af3-42fa-b3ef-4ff2345a796b', 'f85ba081-eb42-4fba-ae2e-3f88f0843b3a', '03e5c7b0-f165-489d-8054-73e0a7232f77', '81e3c7bf-5ba0-4da9-9ddc-bf5acb61bb31', 'df481a38-684a-4c6b-afee-9a82944e56eb']
+2026-04-05 00:07:50,461 | INFO | docuaudit | Checking rule Termination Notice for 8ee55783-95dd-4ad8-84e0-ca0ed13ec97d
+2026-04-05 00:07:53,775 | ERROR | docuaudit | Rule check failed Termination Notice : Expecting value: line 1 column 1 (char 0)
+2026-04-05 00:07:53,778 | INFO | docuaudit | Checking rule Data Privacy Compliance for 8ee55783-95dd-4ad8-84e0-ca0ed13ec97d
+2026-04-05 00:07:55,141 | ERROR | docuaudit | Rule check failed Data Privacy Compliance : Expecting value: line 1 column 1 (char 0)
+2026-04-05 00:07:55,143 | INFO | docuaudit | Checking rule Limitation of Liability for 8ee55783-95dd-4ad8-84e0-ca0ed13ec97d
+2026-04-05 00:07:56,367 | ERROR | docuaudit | Rule check failed Limitation of Liability : Expecting value: line 1 column 1 (char 0)
+2026-04-05 00:07:56,369 | INFO | docuaudit | Checking rule Payment Terms for 8ee55783-95dd-4ad8-84e0-ca0ed13ec97d
+2026-04-05 00:07:57,698 | ERROR | docuaudit | Rule check failed Payment Terms : Expecting value: line 1 column 1 (char 0)
+2026-04-05 00:07:57,701 | INFO | docuaudit | Checking rule dfjdjdjdfj for 8ee55783-95dd-4ad8-84e0-ca0ed13ec97d
+2026-04-05 00:07:58,415 | INFO | docuaudit | Checking rule IP Ownership for 8ee55783-95dd-4ad8-84e0-ca0ed13ec97d
+2026-04-05 00:08:00,648 | ERROR | docuaudit | Rule check failed IP Ownership : Expecting value: line 1 column 1 (char 0)
+2026-04-05 00:08:00,651 | INFO | docuaudit | Audit finished 8ee55783-95dd-4ad8-84e0-ca0ed13ec97d

@@ -1,41 +1,100 @@
-import { theme } from "../../styles/theme";
+import { motion } from "framer-motion";
+
+const variants = {
+  primary: {
+    background: "linear-gradient(135deg, #00d4aa, #2563eb)",
+    color: "#020617",
+    border: "none",
+    fontWeight: "600",
+    boxShadow: "0 4px 14px rgba(0, 212, 170, 0.25)",
+  },
+  secondary: {
+    background: "var(--bg-surface)",
+    color: "var(--text-primary)",
+    border: "1px solid var(--border)",
+    fontWeight: "500",
+    boxShadow: "none",
+  },
+  ghost: {
+    background: "transparent",
+    color: "var(--text-secondary)",
+    border: "1px solid transparent",
+    fontWeight: "500",
+    boxShadow: "none",
+  },
+  danger: {
+    background: "var(--danger-dim)",
+    color: "var(--danger)",
+    border: "1px solid rgba(239, 68, 68, 0.2)",
+    fontWeight: "500",
+    boxShadow: "none",
+  },
+  accent: {
+    background: "var(--accent-dim)",
+    color: "var(--accent)",
+    border: "1px solid var(--border-accent)",
+    fontWeight: "500",
+    boxShadow: "none",
+  },
+};
 
 export default function Button({
   children,
-
-  variant = "primary",
+  variant = "secondary",
+  size = "md",
+  onClick,
+  disabled = false,
+  loading = false,
+  icon,
+  style = {},
+  type = "button",
 }) {
-  const styles = {
-    primary: {
-      background: "linear-gradient(135deg,#00d4aa,#0ea5e9)",
+  const v = variants[variant] || variants.secondary;
 
-      color: "#020617",
-    },
-
-    secondary: {
-      background: "#2563eb",
-
-      color: "white",
-    },
+  const sizes = {
+    sm: { padding: "6px 12px", fontSize: "12px", height: "30px" },
+    md: { padding: "8px 16px", fontSize: "13px", height: "36px" },
+    lg: { padding: "10px 20px", fontSize: "14px", height: "42px" },
   };
 
+  const s = sizes[size] || sizes.md;
+
   return (
-    <button
+    <motion.button
+      type={type}
+      onClick={onClick}
+      disabled={disabled || loading}
+      whileHover={!disabled && !loading ? { scale: 1.02 } : {}}
+      whileTap={!disabled && !loading ? { scale: 0.98 } : {}}
+      transition={{ duration: 0.15 }}
       style={{
-        border: "none",
-
-        padding: "12px 26px",
-
-        borderRadius: theme.radius.md,
-
-        cursor: "pointer",
-
-        fontWeight: "600",
-
-        ...styles[variant],
+        ...v,
+        ...s,
+        borderRadius: "var(--radius-md)",
+        cursor: disabled || loading ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.55 : 1,
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "6px",
+        fontFamily: "inherit",
+        transition: "background 0.2s, box-shadow 0.2s",
+        whiteSpace: "nowrap",
+        ...style,
       }}
     >
+      {loading ? (
+        <span style={{
+          width: "12px",
+          height: "12px",
+          borderRadius: "50%",
+          border: "2px solid currentColor",
+          borderTopColor: "transparent",
+          animation: "spin 0.6s linear infinite",
+          display: "inline-block",
+        }} />
+      ) : icon}
       {children}
-    </button>
+    </motion.button>
   );
 }

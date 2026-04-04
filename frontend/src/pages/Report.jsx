@@ -3,31 +3,27 @@ import { useParams } from "react-router-dom";
 import Layout from "../components/layout/Layout";
 import RiskGauge from "../components/ui/RiskGuage";
 import { getAuditResult } from "../services/api";
-import { ChevronDown } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import RuleCard from "../components/report/RuleCard";
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Skeleton from "../components/ui/Skeleton";
+import EmptyState from "../components/ui/EmptyState";
+import { Download, AlertCircle, SearchX } from "lucide-react";
 
 export default function Report() {
   const { id } = useParams();
-
   const [report, setReport] = useState(null);
-
   const [loading, setLoading] = useState(true);
-
   const [filter, setFilter] = useState("ALL");
-
   const reportRef = useRef(null);
 
-  useEffect(() => {
-    loadReport();
-  }, [id]);
+  useEffect(() => { loadReport(); }, [id]);
 
   async function loadReport() {
     try {
       const data = await getAuditResult(id);
-      console.log('This is the result of the report...', data);
-
       setReport(data);
     } catch (e) {
       console.log(e);
@@ -38,417 +34,144 @@ export default function Report() {
 
   async function exportPDF() {
     if (!reportRef.current) return;
-
-    const canvas = await html2canvas(reportRef.current, {
-      scale: 2,
-    });
-
+    const canvas = await html2canvas(reportRef.current, { scale: 2 });
     const imgData = canvas.toDataURL("image/png");
-
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "px",
-      format: "a4",
-    });
-
+    const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: "a4" });
     const width = pdf.internal.pageSize.getWidth();
-
     const height = (canvas.height * width) / canvas.width;
-
     pdf.addImage(imgData, "PNG", 0, 0, width, height);
-
     pdf.save(`audit-${id}.pdf`);
   }
 
-  if (loading) {
-    return (
-      <Layout>
-        <div style={{ padding: "40px" }}>Loading report...</div>
-      </Layout>
-    );
-  }
+  if (loading) return (
+    <Layout>
+      <div style={{ maxWidth: "1200px", margin: "auto", display: "flex", flexDirection: "column", gap: "32px", width: "100%" }}>
+        <Skeleton height="100px" />
+        <div style={{ display: "flex", gap: "24px" }}>
+          <Skeleton height="180px" style={{ flex: "0 0 320px" }} />
+          <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
+             <Skeleton height="180px" />
+             <Skeleton height="180px" />
+             <Skeleton height="180px" />
+          </div>
+        </div>
+        <Skeleton height="300px" />
+      </div>
+    </Layout>
+  );
 
-  if (!report) {
-    return <Layout>No audit results found</Layout>;
-  }
+  if (!report) return (
+    <Layout>
+      <div style={{ maxWidth: "800px", margin: "auto", paddingTop: "40px" }}>
+        <EmptyState 
+          icon={<AlertCircle size={24} />}
+          title="Report Not Found"
+          description="The audit report you are looking for does not exist or has been deleted."
+        />
+      </div>
+    </Layout>
+  );
 
   const filteredResults = report.results.filter((r) => {
     if (filter === "ALL") return true;
-
-    if (filter === "FAIL") return r.status === "FAIL";
-
-    if (filter === "WARN") return r.status === "WARN";
-
-    if (filter === "PASS") return r.status === "PASS";
-
-    return true;
+    return r.status === filter;
   });
 
   return (
     <Layout>
-      <div ref={reportRef}>
+      <div ref={reportRef} style={{ maxWidth: "1200px", margin: "auto" }}>
         {/* HEADER */}
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "30px",
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "32px", padding: "24px 32px", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)" }}>
           <div>
-            <div
-              style={{
-                fontSize: "20px",
-                fontWeight: "500",
-              }}
-            >
-              {report?.filename}
-            </div>
-
-            <div
-              style={{
-                color: "#64748b",
-              }}
-            >
-              Document ID: {report.document}
+            <h1 style={{ fontSize: "22px", fontWeight: "700", marginBottom: "4px", color: "var(--text-primary)", lineHeight: 1.2 }}>
+              {report?.filename || "Audit Report"}
+            </h1>
+            <div style={{ display: "flex", gap: "12px", alignItems: "center", marginTop: "8px" }}>
+              <span style={{ fontSize: "12px", color: "var(--text-muted)", fontFamily: "monospace", background: "var(--bg-surface-hover)", padding: "2px 8px", borderRadius: "4px", border: "1px solid var(--border)" }}>
+                ID: {report.document.substring(0, 8)}...
+              </span>
+              <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                {new Date(report.uploaded_at).toLocaleString()}
+              </span>
             </div>
           </div>
-
-          <button
-            onClick={exportPDF}
-            style={{
-              background: "linear-gradient(135deg,#00d4aa,#2563eb)",
-
-              border: "none",
-
-              padding: "10px 18px",
-
-              borderRadius: "10px",
-
-              cursor: "pointer",
-
-              fontWeight: "600",
-
-              color: "#020617",
-            }}
-          >
+          <Button variant="primary" onClick={exportPDF} icon={<Download size={16} />}>
             Export PDF
-          </button>
+          </Button>
         </div>
 
-        {/* SUMMARY */}
-
-        <div
-          style={{
-            display: "flex",
-            gap: "40px",
-            marginBottom: "30px",
-          }}
-        >
-          <RiskGauge score={report.risk_score} />
-
-          <div
-            style={{
-              display: "flex",
-              gap: "40px",
-            }}
-          >
-            <Stat label="Rules Checked" value={report.rules_checked} />
-
-            <Stat
-              label="Failures"
-              value={report.results.filter((r) => r.status === "FAIL").length}
-            />
-
-            <Stat
-              label="Warnings"
-              value={report.results.filter((r) => r.status === "WARN").length}
-            />
+        {/* SUMMARY DASHBOARD */}
+        <div style={{ display: "flex", gap: "24px", marginBottom: "32px" }}>
+          {/* Risk Card */}
+          <Card style={{ flex: "0 0 320px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px" }}>
+            <div style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-muted)", marginBottom: "20px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Calculated Risk Score</div>
+            <RiskGauge score={report.risk_score} />
+          </Card>
+          
+          {/* Stats Grid */}
+          <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
+            <StatCard label="Total Rules Checked" value={report.rules_checked} color="var(--accent)" />
+            <StatCard label="Compliance Failures" value={report.results.filter((r) => r.status === "FAIL").length} color="var(--danger)" />
+            <StatCard label="Review Warnings" value={report.results.filter((r) => r.status === "WARN").length} color="var(--warn)" />
           </div>
         </div>
 
         {/* FILTER TABS */}
-
-        <div
-          style={{
-            display: "flex",
-            gap: "10px",
-            marginBottom: "15px",
-          }}
-        >
-          <FilterTab
-            text="All"
-            active={filter === "ALL"}
-            onClick={() => setFilter("ALL")}
-          />
-
-          <FilterTab
-            text="Failures"
-            active={filter === "FAIL"}
-            onClick={() => setFilter("FAIL")}
-          />
-
-          <FilterTab
-            text="Warnings"
-            active={filter === "WARN"}
-            onClick={() => setFilter("WARN")}
-          />
-
-          <FilterTab
-            text="Passed"
-            active={filter === "PASS"}
-            onClick={() => setFilter("PASS")}
-          />
+        <div style={{ display: "flex", gap: "8px", marginBottom: "20px", borderBottom: "1px solid var(--border)", paddingBottom: "16px" }}>
+          <FilterTab text="All Results" count={report.results.length} active={filter === "ALL"} onClick={() => setFilter("ALL")} color="var(--accent)" />
+          <FilterTab text="Failures" count={report.results.filter(r => r.status === "FAIL").length} active={filter === "FAIL"} onClick={() => setFilter("FAIL")} color="var(--danger)" />
+          <FilterTab text="Warnings" count={report.results.filter(r => r.status === "WARN").length} active={filter === "WARN"} onClick={() => setFilter("WARN")} color="var(--warn)" />
+          <FilterTab text="Passed" count={report.results.filter(r => r.status === "PASS").length} active={filter === "PASS"} onClick={() => setFilter("PASS")} color="var(--success)" />
         </div>
 
-        {/* RULE CARDS */}
-
-        <div
-          style={{
-            background: "rgba(17,24,39,0.7)",
-
-            borderRadius: "16px",
-
-            padding: "20px",
-
-            marginBottom: "20px",
-          }}
-        >
-          {filteredResults.map((r) => (
-            <RuleRow key={r.rule_id} rule={r} />
-          ))}
+        {/* RULE RESULTS */}
+        <div>
+          {filteredResults.length === 0 ? (
+            <EmptyState 
+              icon={<SearchX size={20} />}
+              title="No rules found"
+              description={`There are no rules matching the current filter criterion.`}
+            />
+          ) : (
+            filteredResults.map((r) => <RuleCard key={r.rule_id} rule={r} />)
+          )}
         </div>
       </div>
     </Layout>
   );
 }
 
-function Stat({ label, value }) {
+function StatCard({ label, value, color }) {
   return (
-    <div>
-      <div
-        style={{
-          fontSize: "12px",
-          color: "#64748b",
-        }}
-      >
-        {label}
-      </div>
-
-      <div
-        style={{
-          fontSize: "22px",
-          fontWeight: "600",
-        }}
-      >
-        {value}
-      </div>
-    </div>
+    <Card style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "24px 32px", position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: 0, right: 0, width: "100px", height: "100px", borderRadius: "50%", background: `${color}10`, filter: "blur(30px)", pointerEvents: "none", transform: "translate(30%, -30%)" }} />
+      <div style={{ fontSize: "12px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>{label}</div>
+      <div style={{ fontSize: "42px", fontWeight: "700", color: "var(--text-primary)", lineHeight: 1 }}>{value}</div>
+    </Card>
   );
 }
 
-function FilterTab({ text, active, onClick }) {
+function FilterTab({ text, count, active, onClick, color }) {
   return (
-    <div
+    <button
       onClick={onClick}
       style={{
-        padding: "6px 14px",
-
-        borderRadius: "8px",
-
-        cursor: "pointer",
-
-        fontSize: "13px",
-
-        background: active ? "rgba(0,212,170,0.12)" : "rgba(255,255,255,0.04)",
-
-        color: active ? "#00d4aa" : "#94a3b8",
-
-        border: active
-          ? "1px solid rgba(0,212,170,0.4)"
-          : "1px solid rgba(255,255,255,0.05)",
+        display: "flex", alignItems: "center", gap: "8px",
+        padding: "8px 16px", borderRadius: "var(--radius-xl)", cursor: "pointer", fontSize: "13px", fontWeight: "600",
+        background: active ? `${color}15` : "transparent",
+        color: active ? color : "var(--text-secondary)",
+        border: `1px solid ${active ? `${color}40` : "transparent"}`,
+        transition: "background var(--ease-out)"
       }}
     >
       {text}
-    </div>
-  );
-}
-
-function StatusBadge({ text, color }) {
-  return (
-    <div
-      style={{
-        padding: "4px 10px",
-
-        borderRadius: "6px",
-
-        fontSize: "12px",
-
-        fontWeight: "600",
-
-        background: `${color}22`,
-
-        color: color,
-
-        border: `1px solid ${color}55`,
-      }}
-    >
-      {text}
-    </div>
-  );
-}
-
-function RuleRow({ rule }) {
-  const [open, setOpen] = useState(false);
-
-  const statusColor =
-    rule.status === "FAIL"
-      ? "#ef4444"
-      : rule.status === "WARN"
-        ? "#f59e0b"
-        : "#22c55e";
-
-  const severityColor =
-    rule.severity === "CRITICAL"
-      ? "#ef4444"
-      : rule.severity === "HIGH"
-        ? "#f97316"
-        : rule.severity === "MEDIUM"
-          ? "#f59e0b"
-          : "#22c55e";
-
-  return (
-    <div
-      onClick={() => setOpen(!open)}
-      style={{
-        background: "rgba(255,255,255,0.02)",
-
-        border: "1px solid rgba(255,255,255,0.05)",
-
-        borderRadius: "12px",
-
-        padding: "18px",
-
-        marginBottom: "14px",
-
-        cursor: "pointer",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "10px",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            gap: "10px",
-            alignItems: "center",
-          }}
-        >
-          <ChevronDown
-            size={16}
-            style={{
-              transform: open ? "rotate(180deg)" : "rotate(0deg)",
-            }}
-          />
-
-          {rule.rule_name}
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            gap: "8px",
-          }}
-        >
-          <StatusBadge text={rule.status} color={statusColor} />
-
-          <StatusBadge text={rule.severity} color={severityColor} />
-        </div>
-      </div>
-
-      <div
-        style={{
-          marginBottom: "10px",
-          color: "#cbd5f5",
-        }}
-      >
-        {rule.finding}
-      </div>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{
-              height: 0,
-              opacity: 0,
-            }}
-            animate={{
-              height: "auto",
-              opacity: 1,
-            }}
-            exit={{
-              height: 0,
-              opacity: 0,
-            }}
-          >
-            <div
-              style={{
-                background: "rgba(255,255,255,0.03)",
-
-                borderRadius: "10px",
-
-                padding: "14px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#64748b",
-                }}
-              >
-                Confidence
-              </div>
-
-              <div
-                style={{
-                  fontWeight: "600",
-                  marginBottom: "10px",
-                }}
-              >
-                {rule.confidence || 80}%
-              </div>
-
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#64748b",
-                }}
-              >
-                Recommendation
-              </div>
-
-              <div>{rule.recommendation}</div>
-
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#64748b",
-                  marginTop: "10px",
-                }}
-              >
-                Citation
-              </div>
-
-              <div>{rule.citation}</div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+      <span style={{ 
+        background: active ? color : "var(--bg-surface-hover)", 
+        color: active ? "var(--bg-base)" : "var(--text-muted)", 
+        padding: "2px 8px", borderRadius: "10px", fontSize: "11px" 
+      }}>
+        {count}
+      </span>
+    </button>
   );
 }

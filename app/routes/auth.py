@@ -1,27 +1,47 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+
 from app.core.database import get_db
-from app.services.auth import register_user, authenticate_user, create_access_token
+from app.services.auth_service import (
+    UserCreate, 
+    UserLogin, 
+    register_user, 
+    login_user,
+    get_current_user
+)
+from app.models.user import User
 
-router = APIRouter()
-
-class AuthRequest(BaseModel):
-    email: str
-    password: str
+router = APIRouter(tags=["Auth"])
 
 @router.post("/register")
-def register(payload: AuthRequest, db: Session = Depends(get_db)):
-    user = register_user(db, payload.email, payload.password)
-    if not user:
-        raise HTTPException(status_code=400, detail="Email already registered.")
-    token = create_access_token({"sub": user.email})
-    return {"access_token": token, "email": user.email}
+def register(user_data: UserCreate, db: Session = Depends(get_db)):
+    return register_user(db, user_data)
 
 @router.post("/login")
-def login(payload: AuthRequest, db: Session = Depends(get_db)):
-    user = authenticate_user(db, payload.email, payload.password)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid email or password.")
-    token = create_access_token({"sub": user.email})
-    return {"access_token": token, "email": user.email}
+def login(user_data: UserLogin, db: Session = Depends(get_db)):
+    return login_user(db, user_data)
+
+@router.get("/me")
+def get_me(current_user: User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "created_at": current_user.created_at
+    }
+
+from pydantic import BaseModel
+class PasswordUpdate(BaseModel):
+    new_password: str
+
+@router.put("/password")
+def update_password(
+    data: PasswordUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    from app.services.auth_service import change_password
+    success = change_password(db, current_user, data.new_password)
+    if success:
+        return {"message": "Password updated successfully"}
+    from fastapi import HTTPException
+    raise HTTPException(status_code=400, detail="Failed to update password")

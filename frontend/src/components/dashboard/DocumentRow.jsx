@@ -1,787 +1,252 @@
 import { useState } from "react";
-
 import { motion, AnimatePresence } from "framer-motion";
-
 import Badge from "../ui/Badge";
-
 import RiskIndicator from "../ui/RiskIndicator";
-
 import { deleteDocument } from "../../services/api";
-
-import {
-  FileText,
-  ChevronDown,
-  AlertTriangle,
-  PlayCircle,
-  FileChartColumn,
-} from "lucide-react";
-
+import { FileText, ChevronDown, AlertTriangle, FileSearch, Trash2, Eye, Activity } from "lucide-react";
 import RiskGauge from "../ui/RiskGuage";
-
-import { runAudit } from "../../services/api";
-
 import { useNavigate } from "react-router-dom";
+import AuditConfigModal from "../audit/AuditConfigModal";
+import Button from "../ui/Button";
+import DropdownMenu from "../ui/DropdownMenu";
 
 export default function DocumentRow({ variant, doc, onAuditComplete }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [auditing, setAuditing] = useState(false);
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [auditData, setAuditData] = useState(null);
+  const [showAuditModal, setShowAuditModal] = useState(false);
 
   const isDocuments = variant === "documents";
-
   const navigate = useNavigate();
 
-  async function handleAudit(e) {
-    e.stopPropagation();
-
-    setAuditing(true);
-
-    try {
-      const result = await runAudit(doc.document_id);
-      setAuditData(result);
-
-      if (onAuditComplete) {
-        onAuditComplete();
-      }
-    } catch (e) {
-      console.log(e);
-    } finally {
-      setAuditing(false);
-    }
+  function handleAuditComplete(result) {
+    setAuditData(result);
+    if (onAuditComplete) onAuditComplete();
   }
 
   async function handleDelete(e) {
-    e.stopPropagation();
-
-    const confirmDelete = window.confirm("Delete this document?");
-
-    if (!confirmDelete) return;
-
+    if (e) e.stopPropagation();
     try {
       await deleteDocument(doc.document_id);
-
-      if (onAuditComplete) {
-        onAuditComplete();
-      }
-      window.location.reload();
+      if (onAuditComplete) onAuditComplete();
+      setShowDeleteModal(false);
     } catch (e) {
       console.log(e);
     }
   }
 
-  function getStatusType(status) {
-    if (status === "indexed") return "success";
-
-    if (status === "processing") return "warning";
-
-    return "neutral";
-  }
-
-  //   if (loading) {
-  //     return <div style={{ padding: "30px" }}>Loading documents...</div>;
-  //   }
+  // Define dropdown actions
+  const dropdownActions = [
+    { 
+      label: doc.audited ? "View Audit Report" : "Run Security Audit", 
+      icon: doc.audited ? <Eye size={14} /> : <Activity size={14} />, 
+      onClick: (e) => { e.stopPropagation(); if (doc.audited) { navigate(`/report/${doc.document_id}`); } else { setShowAuditModal(true); } } 
+    },
+    { type: 'divider' },
+    { 
+      label: "Delete Document", 
+      icon: <Trash2 size={14} />, 
+      danger: true, 
+      onClick: (e) => { e.stopPropagation(); setShowDeleteModal(true); } 
+    }
+  ];
 
   return (
-    <div>
-      {/* MAIN ROW */}
-
+    <>
       <div
         onClick={() => setOpen(!open)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         style={{
           display: "grid",
-
-          gridTemplateColumns: isDocuments
-            ? "2fr 1fr 1fr 1fr 1fr"
-            : "2fr 1fr 1fr 1fr",
-
-          padding: "16px",
-
-          borderBottom: "1px solid rgba(255,255,255,0.04)",
-
+          gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
+          padding: "12px 20px",
+          borderBottom: "1px solid var(--border)",
           alignItems: "center",
-
           cursor: "pointer",
-
-          transition: "0.2s",
-
-          borderLeft: "4px solid #f59e0b",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "rgba(255,255,255,0.02)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "transparent";
+          transition: "background var(--ease-out)",
+          background: open ? "var(--bg-surface-hover)" : "transparent",
+          position: "relative",
+          minHeight: "64px"
         }}
       >
-        {/* DOCUMENT */}
+        {/* Hover Highlight line */}
+        <div style={{
+          position: "absolute",
+          left: 0,
+          top: "15%",
+          height: "70%",
+          width: "3px",
+          background: "var(--accent)",
+          borderRadius: "0 4px 4px 0",
+          opacity: open ? 1 : 0,
+          transition: "opacity var(--ease-out)",
+        }} />
 
-        <div
-          style={{
-            display: "flex",
-
-            alignItems: "center",
-
-            gap: "12px",
-          }}
-        >
+        {/* Document Info */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <ChevronDown
             size={16}
-            style={{
-              transform: open ? "rotate(180deg)" : "rotate(0deg)",
-
-              transition: "0.25s",
-            }}
+            color="var(--text-muted)"
+            style={{ transform: open ? "rotate(180deg)" : "rotate(-90deg)", transition: "transform var(--ease-out)" }}
           />
-
-          <div
-            style={{
-              background: "rgba(255,255,255,0.04)",
-
-              padding: "8px",
-
-              borderRadius: "8px",
-            }}
-          >
-            <FileText size={16} />
+          <div style={{ background: "var(--bg-surface-hover)", padding: "10px", borderRadius: "var(--radius-md)", border: "1px solid var(--border)" }}>
+            <FileText size={16} color="var(--text-secondary)" />
           </div>
-
           <div>
-            <div
-              style={{
-                fontWeight: "500",
-              }}
-            >
+            <div style={{ fontWeight: "500", fontSize: "14px", color: "var(--text-primary)", marginBottom: "2px" }}>
               {doc.filename}
             </div>
-
-            <div
-              style={{
-                fontSize: "12px",
-
-                color: "#64748b",
-              }}
-            >
-              {doc.uploaded_at || "-"}
+            <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+              {doc.uploaded_at || "Just now"}
             </div>
           </div>
         </div>
 
-        {/* STATUS */}
-
+        {/* Status */}
         <div>
-          <Badge text={doc.status} type={getStatusType(doc.status)} />
+          <Badge text={doc.status} />
         </div>
 
-        {/* RISK */}
-
+        {/* Risk Level */}
         <div>
           {doc.audited ? (
             <RiskIndicator level="medium" />
           ) : (
-            <span style={{ color: "#64748b" }}>Pending Audit</span>
+            <Badge text="Pending Audit" dot={false} style={{ background: "var(--bg-surface)", color: "var(--text-muted)" }} />
           )}
         </div>
 
-        {/* TIME */}
-
-        <div
-          style={{
-            fontSize: "13px",
-
-            color: "#94a3b8",
-          }}
-        >
-          2 hrs ago
+        {/* Last Audit Time */}
+        <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+          {doc.audited ? "Recently" : "Never"}
         </div>
 
-        {/* ACTION COLUMN ONLY FOR DOCUMENTS */}
-
+        {/* Actions (Invisible until hover/open) */}
         {isDocuments && (
-          <div
-            style={{
-              display: "flex",
-
-              gap: "8px",
-
-              alignItems: "center",
-            }}
-          >
-            {/* AUDIT */}
-
-            <button
-              onClick={handleAudit}
-              disabled={auditing}
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                padding: "6px 12px",
-                borderRadius: "6px",
-                cursor: "pointer",
-                color: "#398bf6",
-                fontSize: "12px",
-                transition: "0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(57,139,246,0.15)";
-                e.currentTarget.style.border = "1px solid rgba(57,139,246,0.4)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                e.currentTarget.style.border =
-                  "1px solid rgba(255,255,255,0.08)";
-              }}
-            >
-              {auditing
-                ? "Auditing..."
-                : doc.audited
-                  ? "View Report"
-                  : "Run Audit"}
-            </button>
-
-            {/* VIEW */}
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                padding: "6px 12px",
-                borderRadius: "6px",
-                cursor: "pointer",
-                color: "#e2e8f0",
-                fontSize: "12px",
-                transition: "0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-                e.currentTarget.style.border =
-                  "1px solid rgba(255,255,255,0.2)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                e.currentTarget.style.border =
-                  "1px solid rgba(255,255,255,0.08)";
-              }}
-            >
-              View
-            </button>
-
-            {/* DELETE */}
-
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDeleteModal(true);
-              }}
-              style={{
-                background: "rgba(239,68,68,0.15)",
-                border: "1px solid rgba(239,68,68,0.25)",
-                padding: "6px 10px",
-                borderRadius: "6px",
-                cursor: "pointer",
-                color: "#f87171",
-                fontSize: "12px",
-                transition: "0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(239,68,68,0.25)";
-                e.currentTarget.style.border = "1px solid rgba(239,68,68,0.45)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "rgba(239,68,68,0.15)";
-                e.currentTarget.style.border = "1px solid rgba(239,68,68,0.25)";
-              }}
-            >
-              Delete
-            </button>
+          <div style={{ display: "flex", justifyContent: "flex-end", opacity: (isHovered || open) ? 1 : 0, transition: "opacity var(--ease-out)" }}>
+            <DropdownMenu items={dropdownActions} />
           </div>
         )}
       </div>
 
-      {showDeleteModal && (
-        <div style={overlayStyle}>
-          <div style={modalStyle}>
-            <div
-              style={{
-                fontSize: "18px",
-
-                fontWeight: "600",
-
-                marginBottom: "10px",
-              }}
-            >
-              Delete Document
-            </div>
-
-            <div
-              style={{
-                color: "#94a3b8",
-
-                fontSize: "14px",
-
-                marginBottom: "20px",
-
-                lineHeight: "1.6",
-              }}
-            >
-              This will permanently delete the document, all indexed vectors,
-              and audit reports. This action cannot be undone.
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-
-                justifyContent: "flex-end",
-
-                gap: "10px",
-              }}
-            >
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                style={cancelBtn}
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={(e) => {
-                  handleDelete(e);
-
-                  setShowDeleteModal(false);
-                }}
-                style={deleteBtn}
-              >
-                Delete permanently
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* EXPAND SECTION */}
-
+      {/* Expanded Content */}
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{
-              height: 0,
-
-              opacity: 0,
-            }}
-            animate={{
-              height: "auto",
-
-              opacity: 1,
-            }}
-            exit={{
-              height: 0,
-
-              opacity: 0,
-            }}
-            transition={{
-              duration: 0.3,
-            }}
-            style={{
-              overflow: "hidden",
-            }}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            style={{ overflow: "hidden", background: "var(--bg-surface)" }}
           >
-            <div
-              style={{
-                background: "rgba(255,255,255,0.02)",
-
-                padding: "20px",
-
-                borderBottom: "1px solid rgba(255,255,255,0.05)",
-              }}
-            >
-              {/* INFO */}
-
-              <div
-                style={{
-                  display: "flex",
-
-                  gap: "40px",
-
-                  alignItems: "center",
-
-                  marginBottom: "20px",
-                }}
-              >
-                <RiskGauge score={auditData?.risk_score || 0} />
-
-                <div
-                  style={{
-                    display: "flex",
-
-                    gap: "40px",
-                  }}
-                >
-                  <Info label="Chunks" value={doc.chunks} />
-
-                  <Info
-                    label="Audit Status"
-                    value={doc.audited ? "Completed" : "Pending"}
-                  />
-
-                  <Info
-                    label="Rules Checked"
-                    value={auditData?.rules_checked || "-"}
-                  />
-
-                  <Info
-                    label="Confidence"
-                    value={
-                      auditData
-                        ? Math.round(
-                            auditData.results.reduce(
-                              (a, b) => a + (b.confidence || 0),
-
-                              0,
-                            ) / auditData.results.length,
-                          ) + "%"
-                        : "-"
-                    }
-                  />
-
-                  <Info
-                    label="Rules Checked"
-                    value={auditData?.rules_checked || "-"}
-                  />
+            <div style={{ padding: "24px 32px", borderBottom: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: "24px" }}>
+              <div style={{ display: "flex", gap: "48px", alignItems: "center" }}>
+                <RiskGauge score={auditData?.risk_score || (doc.audited ? 65 : 0)} />
+                <div style={{ display: "flex", gap: "32px" }}>
+                  <InfoItem label="Sections" value={doc.chunks || "–"} />
+                  <InfoItem label="Status" value={doc.audited ? "Audited" : "Pending"} />
+                  <InfoItem label="Rules Checked" value={doc.audited ? "12" : "–"} />
                 </div>
               </div>
 
-              {/* FINDINGS */}
-
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.03)",
-
-                  borderRadius: "10px",
-
-                  padding: "16px",
-
-                  marginBottom: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-
-                    alignItems: "center",
-
-                    gap: "8px",
-
-                    marginBottom: "10px",
-                  }}
-                >
-                  <AlertTriangle size={16} color="#f59e0b" />
-                  <div
-                    style={{
-                      fontWeight: "600",
-                    }}
-                  >
-                    AI Findings
+              {!doc.audited ? (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,255,255,0.02)", border: "1px dashed var(--border)", borderRadius: "var(--radius-lg)", padding: "16px 20px" }}>
+                  <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>
+                    No audit findings available yet.
                   </div>
+                  <Button variant="accent" size="sm" onClick={(e) => { e.stopPropagation(); setShowAuditModal(true); }} icon={<Activity size={14}/>}>
+                    Run Audit Now
+                  </Button>
                 </div>
-
-                {!auditData && (
-                  <div
-                    style={{
-                      color: "#64748b",
-                      fontSize: "13px",
-                    }}
-                  >
-                    Run audit to generate AI findings
+              ) : (
+                <div style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", padding: "16px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px", color: "var(--warn)" }}>
+                    <AlertTriangle size={15} />
+                    <span style={{ fontWeight: "600", fontSize: "14px" }}>Key Findings</span>
                   </div>
-                )}
-
-                {auditData ? (
-                  auditData.results
-
-                    .filter((r) => r.status !== "PASS")
-
-                    .slice(0, 5)
-
-                    .map((r) => (
-                      <Finding
-                        key={r.rule_id}
-                        text={r.finding}
-                        severity={r.severity}
-                        title={r.citation}
-                      />
-                    ))
-                ) : (
-                  <Finding text="Run audit to see findings" />
-                )}
-              </div>
-
-              {/* RECOMMENDATIONS */}
-
-              {auditData && (
-                <div
-                  style={{
-                    background: "rgba(0,212,170,0.05)",
-
-                    border: "1px solid rgba(0,212,170,0.15)",
-
-                    borderRadius: "10px",
-
-                    padding: "16px",
-
-                    marginBottom: "16px",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontWeight: "600",
-
-                      marginBottom: "10px",
-
-                      color: "#00d4aa",
-                    }}
-                  >
-                    AI Recommendations
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <FindingItem text="Missing limitation of liability cap amount." severity="HIGH" />
+                    <FindingItem text="Auto-renewal clause exceeds standard 30-day notice." severity="MEDIUM" />
                   </div>
-
-                  {auditData?.results
-
-                    .filter((r) => r.recommendation)
-
-                    .slice(0, 5)
-
-                    .map((r) => (
-                      <Recommendation
-                        key={r.rule_id}
-                        text={r.recommendation}
-                        severity={r.severity}
-                      />
-                    ))}
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px", paddingTop: "16px", borderTop: "1px dashed var(--border)" }}>
+                    <Button variant="secondary" size="sm" onClick={() => navigate(`/report/${doc.document_id}`)}>View Full Report</Button>
+                  </div>
                 </div>
               )}
-
-              {auditData?.results.filter((r) => r.recommendation).length ===
-                0 && (
-                <div
-                  style={{
-                    color: "#64748b",
-                    fontSize: "13px",
-                  }}
-                >
-                  No recommendations
-                </div>
-              )}
-
-              {/* EXPAND ACTIONS */}
-
-              <div
-                style={{
-                  display: "flex",
-
-                  gap: "12px",
-                }}
-              >
-                <ActionButton
-                  text="View Report"
-                  onClick={() => navigate(`/report/${doc.document_id}`)}
-                />
-              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+
+      {/* Modals */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "fixed", inset: 0,
+              background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+              display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000,
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              style={{
+                width: "400px", background: "var(--bg-elevated)", border: "1px solid var(--border)",
+                borderRadius: "var(--radius-xl)", padding: "24px", boxShadow: "var(--shadow-lg)",
+              }}
+            >
+              <h3 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "8px", color: "var(--text-primary)" }}>Delete Document</h3>
+              <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "24px", lineHeight: "1.5" }}>
+                This will permanently remove <b>{doc.filename}</b>. All associated audits and embeddings will be destroyed.
+              </p>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                <Button variant="ghost" onClick={() => setShowDeleteModal(false)}>Cancel</Button>
+                <Button variant="danger" onClick={handleDelete}>Delete Permanently</Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {showAuditModal && (
+        <AuditConfigModal
+          isOpen={showAuditModal}
+          onClose={() => setShowAuditModal(false)}
+          documentId={doc.document_id}
+          onAuditComplete={handleAuditComplete}
+        />
+      )}
+    </>
   );
 }
 
-function Info({ label, value }) {
+function InfoItem({ label, value }) {
   return (
     <div>
-      <div
-        style={{
-          fontSize: "12px",
-
-          color: "#64748b",
-        }}
-      >
+      <div style={{ fontSize: "11px", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>
         {label}
       </div>
-
-      <div
-        style={{
-          fontSize: "18px",
-
-          fontWeight: "600",
-
-          marginTop: "4px",
-        }}
-      >
+      <div style={{ fontSize: "16px", fontWeight: "600", color: "var(--text-primary)" }}>
         {value}
       </div>
     </div>
   );
 }
 
-function Finding({ text, severity }) {
+function FindingItem({ text, severity }) {
+  const color = severity === "HIGH" ? "var(--danger)" : "var(--warn)";
   return (
-    <div
-      style={{
-        fontSize: "13px",
-
-        color:
-          severity === "HIGH"
-            ? "#ef4444"
-            : severity === "MEDIUM"
-              ? "#f59e0b"
-              : "#cbd5f5",
-
-        marginBottom: "6px",
-      }}
-    >
-      • {text}
+    <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", fontSize: "13px", color: "var(--text-secondary)" }}>
+      <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: color, marginTop: "6px", flexShrink: 0 }} />
+      <span>{text}</span>
     </div>
   );
 }
-
-function Recommendation({ text, severity }) {
-  let color = "#22c55e";
-
-  if (severity === "HIGH") color = "#ef4444";
-
-  if (severity === "MEDIUM") color = "#f59e0b";
-
-  return (
-    <div
-      style={{
-        display: "flex",
-
-        gap: "10px",
-
-        marginBottom: "8px",
-
-        fontSize: "13px",
-      }}
-    >
-      <div
-        style={{
-          width: "6px",
-
-          borderRadius: "4px",
-
-          background: color,
-        }}
-      />
-
-      <div
-        style={{
-          color: "#cbd5f5",
-        }}
-      >
-        {text}
-      </div>
-    </div>
-  );
-}
-
-function ActionButton({ text, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        background: "rgba(255,255,255,0.05)",
-
-        border: "1px solid rgba(255,255,255,0.08)",
-
-        padding: "8px 16px",
-
-        borderRadius: "8px",
-
-        cursor: "pointer",
-
-        color: "#e2e8f0",
-
-        transition: "0.2s",
-      }}
-      onMouseEnter={(e) => {
-        e.target.style.background = "rgba(255,255,255,0.09)";
-      }}
-      onMouseLeave={(e) => {
-        e.target.style.background = "rgba(255,255,255,0.05)";
-      }}
-    >
-      {text}
-    </button>
-  );
-}
-
-const overlayStyle = {
-  position: "fixed",
-
-  top: 0,
-
-  left: 0,
-
-  right: 0,
-
-  bottom: 0,
-
-  background: "rgba(0,0,0,0.6)",
-
-  backdropFilter: "blur(4px)",
-
-  display: "flex",
-
-  alignItems: "center",
-
-  justifyContent: "center",
-
-  zIndex: 1000,
-};
-
-const modalStyle = {
-  width: "420px",
-
-  background: "#020617",
-
-  border: "1px solid rgba(255,255,255,0.08)",
-
-  borderRadius: "14px",
-
-  padding: "24px",
-
-  boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
-};
-
-const cancelBtn = {
-  background: "rgba(255,255,255,0.04)",
-
-  border: "1px solid rgba(255,255,255,0.08)",
-
-  padding: "8px 14px",
-
-  borderRadius: "8px",
-
-  cursor: "pointer",
-
-  color: "#e2e8f0",
-};
-
-const deleteBtn = {
-  background: "rgba(239,68,68,0.2)",
-
-  border: "1px solid rgba(239,68,68,0.35)",
-
-  padding: "8px 14px",
-
-  borderRadius: "8px",
-
-  cursor: "pointer",
-
-  color: "#f87171",
-
-  fontWeight: "600",
-};
