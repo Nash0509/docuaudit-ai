@@ -15,7 +15,7 @@ app = FastAPI(title="DocuAudit AI", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,6 +28,12 @@ from app.routes import rules
 app.include_router(rules.router, prefix="/api/rules", tags=["Rules"])
 from app.routes import settings
 app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
+from app.routes import activity
+app.include_router(activity.router, prefix="/api/activities", tags=["Activity"])
+from app.routes import notification
+app.include_router(notification.router, prefix="/api/notifications", tags=["Notification"])
+from app.routes import billing
+app.include_router(billing.router, prefix="/api/billing", tags=["Billing"])
 
 @app.get("/")
 def health_check():

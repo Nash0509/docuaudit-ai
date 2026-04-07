@@ -11,6 +11,9 @@ from app.core.database import get_db
 from app.services.auth_service import get_current_user
 from app.models.user import User
 from app.models.document import Document
+from app.services.activity_service import log_activity
+from app.services.notification_service import create_notification
+from app.services.email_service import send_email
 
 router = APIRouter()
 
@@ -27,6 +30,12 @@ async def upload_document(
         raise HTTPException(
             status_code=400,
             detail="Only PDF supported"
+        )
+        
+    if current_user.audit_count >= 1 and not current_user.is_subscribed:
+        raise HTTPException(
+            status_code=402,
+            detail="TRIAL_ENDED_UPLOAD"
         )
 
     document_id = str(uuid.uuid4())
@@ -54,6 +63,37 @@ async def upload_document(
     new_doc.chunks = chunk_count
     new_doc.status = "ready"
     db.commit()
+
+    # Log Upload Activity
+    log_activity(
+        db=db,
+        user_id=current_user.id,
+        action="UPLOAD",
+        entity_type="document",
+        entity_id=document_id,
+        description=f"Uploaded {file.filename}"
+    )
+    
+    # Generate Notifications
+    create_notification(
+        db=db,
+        user_id=current_user.id,
+        title="Document Uploaded",
+        message=f"Uploaded {file.filename}",
+        type="INFO",
+        entity_type="document",
+        entity_id=document_id
+    )
+
+    # Send Email (Pro Subscribers Only)
+    if current_user.is_subscribed:
+        send_email(
+            to_email=current_user.email,
+            subject=f"DocuAudit AI: Document Uploaded — {file.filename}",
+            title="Document Uploaded",
+            message=f"Your document <strong>{file.filename}</strong> has been successfully uploaded and indexed. It is now ready to be audited.",
+            type="INFO"
+        )
 
     return {
         "document_id": document_id,
@@ -109,6 +149,37 @@ def delete_document(
 
         db.delete(document)
         db.commit()
+
+        # Log Delete Activity
+        log_activity(
+            db=db,
+            user_id=current_user.id,
+            action="DOCUMENT_DELETED",
+            entity_type="document",
+            entity_id=document_id,
+            description=f"Deleted document {document.filename}"
+        )
+        
+        # Dispatch Notification
+        create_notification(
+            db=db,
+            user_id=current_user.id,
+            title="Document Deleted",
+            message=f"Deleted document {document.filename}",
+            type="INFO",
+            entity_type="document",
+            entity_id=document_id
+        )
+
+        # Send Email (Pro Subscribers Only)
+        if current_user.is_subscribed:
+            send_email(
+                to_email=current_user.email,
+                subject=f"DocuAudit AI: Document Deleted — {document.filename}",
+                title="Document Deleted",
+                message=f"The document <strong>{document.filename}</strong> and all its associated AI vectors have been permanently deleted from your account.",
+                type="INFO"
+            )
 
         logger.info(f"Document fully deleted {document_id}")
         return {"message": "Document deleted"}

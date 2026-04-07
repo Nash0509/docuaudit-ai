@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useStore from "../utils/Store";
-import { loginUser, registerUser } from "../services/api";
+import { loginUser, registerUser, loginGuest } from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, Mail, Lock, ArrowRight } from "lucide-react";
+import { ShieldCheck, Mail, Lock, ArrowRight, User } from "lucide-react";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,6 +11,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
   
   const setToken = useStore((state) => state.setToken);
   const navigate = useNavigate();
@@ -33,6 +34,20 @@ export default function Auth() {
       setError(err.response?.data?.detail || "Authentication failed. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    setError("");
+    setGuestLoading(true);
+    try {
+      const res = await loginGuest();
+      setToken(res.access_token);
+      navigate("/");
+    } catch (err) {
+      setError(err.response?.data?.detail || "Guest login failed. Please try again.");
+    } finally {
+      setGuestLoading(false);
     }
   };
 
@@ -215,6 +230,47 @@ export default function Auth() {
                 )}
               </motion.button>
             </form>
+
+            {/* Divider with "or" */}
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "20px 0" }}>
+              <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
+              <span style={{ color: "var(--text-muted)", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>or</span>
+              <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
+            </div>
+
+            {/* Guest Login Button */}
+            <motion.button
+              onClick={handleGuestLogin}
+              disabled={guestLoading}
+              whileHover={{ borderColor: "rgba(0, 212, 170, 0.4)", background: "rgba(0, 212, 170, 0.05)" }}
+              whileTap={!guestLoading ? { scale: 0.99 } : {}}
+              style={{
+                width: "100%",
+                height: "44px",
+                borderRadius: "var(--radius-md)",
+                background: "transparent",
+                color: "var(--text-secondary)",
+                fontWeight: "600",
+                fontSize: "14px",
+                fontFamily: "inherit",
+                border: "1px solid var(--border)",
+                cursor: guestLoading ? "not-allowed" : "pointer",
+                opacity: guestLoading ? 0.75 : 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {guestLoading ? (
+                <span style={{ width: "16px", height: "16px", border: "2px solid rgba(255,255,255,0.2)", borderTopColor: "rgba(255,255,255,0.7)", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} />
+              ) : (
+                <>
+                  <User size={16} /> Continue as Guest
+                </>
+              )}
+            </motion.button>
 
             {/* Toggle */}
             <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: "1px solid var(--border)" }}>

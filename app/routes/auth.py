@@ -7,6 +7,7 @@ from app.services.auth_service import (
     UserLogin, 
     register_user, 
     login_user,
+    login_guest,
     get_current_user
 )
 from app.models.user import User
@@ -21,12 +22,18 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 def login(user_data: UserLogin, db: Session = Depends(get_db)):
     return login_user(db, user_data)
 
+@router.post("/guest-login")
+def guest_login(db: Session = Depends(get_db)):
+    return login_guest(db)
+
 @router.get("/me")
 def get_me(current_user: User = Depends(get_current_user)):
     return {
         "id": current_user.id,
         "email": current_user.email,
-        "created_at": current_user.created_at
+        "created_at": current_user.created_at,
+        "audit_count": current_user.audit_count,
+        "is_subscribed": current_user.is_subscribed
     }
 
 from pydantic import BaseModel

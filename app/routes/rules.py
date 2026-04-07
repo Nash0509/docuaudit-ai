@@ -7,6 +7,9 @@ from app.services.auth_service import get_current_user
 from app.models.user import User
 from app.models.rule import Rule
 from app.services.rule_service import get_merged_rules
+from app.services.activity_service import log_activity
+from app.services.notification_service import create_notification
+from app.services.email_service import send_email
 
 router = APIRouter()
 
@@ -33,6 +36,36 @@ def create_rule(
     db.add(new_rule)
     db.commit()
     db.refresh(new_rule)
+
+    log_activity(
+        db=db,
+        user_id=current_user.id,
+        action="RULE_CREATED",
+        entity_type="rule",
+        entity_id=new_rule.id,
+        description=f"Created rule {new_rule.name}"
+    )
+    
+    create_notification(
+        db=db,
+        user_id=current_user.id,
+        title="Rule Created",
+        message=f"Created rule {new_rule.name}",
+        type="SUCCESS",
+        entity_type="rule",
+        entity_id=new_rule.id
+    )
+
+    # Send Email (Pro Subscribers Only)
+    if current_user.is_subscribed:
+        send_email(
+            to_email=current_user.email,
+            subject=f"DocuAudit AI: New Compliance Rule Created",
+            title="Rule Created",
+            message=f"Your custom compliance rule <strong>{new_rule.name}</strong> has been saved and is now active. It will be applied in future audits when selected.",
+            type="SUCCESS"
+        )
+
     return new_rule
 
 @router.get("")
@@ -58,6 +91,16 @@ def delete_rule(
         
     db.delete(rule)
     db.commit()
+
+    log_activity(
+        db=db,
+        user_id=current_user.id,
+        action="RULE_DELETED",
+        entity_type="rule",
+        entity_id=rule.id,
+        description=f"Deleted rule {rule.name}"
+    )
+
     return {"message": "Rule deleted"}
 
 @router.put("/{rule_id}")

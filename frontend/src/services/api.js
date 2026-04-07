@@ -27,6 +27,11 @@ export const registerUser = async (email, password) => {
   return res.data;
 };
 
+export const loginGuest = async () => {
+  const res = await API.post("/auth/guest-login");
+  return res.data;
+};
+
 export const getCurrentUser = async () => {
   const res = await API.get("/auth/me");
   return res.data;
@@ -112,5 +117,37 @@ export const getSettings = async () => {
 
 export const updateSettings = async (data) => {
   const res = await API.put("/settings", data);
+  return res.data;
+};
+
+// -------------
+// Activity APIs
+// -------------
+
+export const getActivities = async () => {
+  const res = await API.get("/activities");
+  return res.data;
+};
+
+// -------------
+// Notification APIs
+// -------------
+
+export const getUnreadCount = async () => {
+  const res = await API.get("/notifications/unread-count");
+  return res.data;
+};
+
+// -------------
+// Billing APIs
+// -------------
+
+export const createCheckoutSession = async () => {
+  const res = await API.post("/billing/create-checkout-session");
+  return res.data;
+};
+
+export const mockSuccessCheckout = async () => {
+  const res = await API.post("/billing/test-mock-success");
   return res.data;
 };

@@ -60,7 +60,7 @@ export default function DocumentRow({ variant, doc, onAuditComplete }) {
         onMouseLeave={() => setIsHovered(false)}
         style={{
           display: "grid",
-          gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
+          gridTemplateColumns: "2fr 1fr 1fr 1fr",
           padding: "12px 20px",
           borderBottom: "1px solid var(--border)",
           alignItems: "center",
@@ -123,12 +123,7 @@ export default function DocumentRow({ variant, doc, onAuditComplete }) {
           {doc.audited ? "Recently" : "Never"}
         </div>
 
-        {/* Actions (Invisible until hover/open) */}
-        {isDocuments && (
-          <div style={{ display: "flex", justifyContent: "flex-end", opacity: (isHovered || open) ? 1 : 0, transition: "opacity var(--ease-out)" }}>
-            <DropdownMenu items={dropdownActions} />
-          </div>
-        )}
+
       </div>
 
       {/* Expanded Content */}
@@ -153,8 +148,10 @@ export default function DocumentRow({ variant, doc, onAuditComplete }) {
 
               {!doc.audited ? (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "rgba(255,255,255,0.02)", border: "1px dashed var(--border)", borderRadius: "var(--radius-lg)", padding: "16px 20px" }}>
-                  <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-                    No audit findings available yet.
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setShowDeleteModal(true); }} icon={<Trash2 size={14}/>}>
+                      Delete
+                    </Button>
                   </div>
                   <Button variant="accent" size="sm" onClick={(e) => { e.stopPropagation(); setShowAuditModal(true); }} icon={<Activity size={14}/>}>
                     Run Audit Now
@@ -170,7 +167,10 @@ export default function DocumentRow({ variant, doc, onAuditComplete }) {
                     <FindingItem text="Missing limitation of liability cap amount." severity="HIGH" />
                     <FindingItem text="Auto-renewal clause exceeds standard 30-day notice." severity="MEDIUM" />
                   </div>
-                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px", paddingTop: "16px", borderTop: "1px dashed var(--border)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "16px", paddingTop: "16px", borderTop: "1px dashed var(--border)" }}>
+                    <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setShowDeleteModal(true); }} icon={<Trash2 size={14}/>}>
+                      Delete Document
+                    </Button>
                     <Button variant="secondary" size="sm" onClick={() => navigate(`/report/${doc.document_id}`)}>View Full Report</Button>
                   </div>
                 </div>

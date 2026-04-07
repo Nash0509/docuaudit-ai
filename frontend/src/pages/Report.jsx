@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import Layout from "../components/layout/Layout";
+import useStore from "../utils/Store";
 import RiskGauge from "../components/ui/RiskGuage";
 import { getAuditResult } from "../services/api";
 import jsPDF from "jspdf";
@@ -13,13 +14,17 @@ import EmptyState from "../components/ui/EmptyState";
 import { Download, AlertCircle, SearchX } from "lucide-react";
 
 export default function Report() {
+  const setTopBar = useStore(state => state.setTopBar);
   const { id } = useParams();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("ALL");
   const reportRef = useRef(null);
 
-  useEffect(() => { loadReport(); }, [id]);
+  useEffect(() => { 
+    setTopBar("reports");
+    loadReport(); 
+  }, [id]);
 
   async function loadReport() {
     try {

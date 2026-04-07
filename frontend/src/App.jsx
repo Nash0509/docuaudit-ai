@@ -7,6 +7,8 @@ import Reports from "./pages/Reports";
 import Report from "./pages/Report";
 import Rules from "./pages/Rules";
 import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
+import Pricing from "./pages/Pricing";
 
 export default function App() {
   return (
@@ -47,6 +49,18 @@ export default function App() {
         <Route path="/settings" element={
           <ProtectedRoute>
             <Settings />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/pricing" element={
+          <ProtectedRoute>
+            <Pricing />
           </ProtectedRoute>
         } />
       </Routes>

@@ -6,6 +6,10 @@ from app.core.database import get_db
 from app.services.auth_service import get_current_user
 from app.models.user import User
 from app.models.document import Document
+from app.models.settings import UserSettings
+from app.services.activity_service import log_activity
+from app.services.notification_service import create_notification
+from app.services.email_service import send_email
 
 router = APIRouter()
 
@@ -34,11 +38,63 @@ def run_audit(
             logger.info(f"Audit already exists {document_id}")
             return document.audit_result
 
-        result = audit_service.run_audit(document_id, request.rule_ids, db)
+        if current_user.audit_count >= 1 and not current_user.is_subscribed:
+            raise HTTPException(status_code=402, detail="TRIAL_ENDED")
+            
+        settings = db.query(UserSettings).filter(UserSettings.user_id == current_user.id).first()
+        result = audit_service.run_audit(document_id, request.rule_ids, db, settings)
         
+        current_user.audit_count += 1
         document.audited = True
         document.audit_result = result
         db.commit()
+
+        # Log Audit Run Activity
+        log_activity(
+            db=db,
+            user_id=current_user.id,
+            action="AUDIT_RUN",
+            entity_type="audit",
+            entity_id=document_id,
+            description=f"Ran audit on {document.filename}"
+        )
+        
+        # Dispatch Notification depending on risk logic
+        risk_score = result.get('risk_score', 0)
+        risk_type = "WARNING" if risk_score > 70 else "SUCCESS"
+        risk_title = "High Risk Detected" if risk_score > 70 else "Audit Completed"
+        risk_msg = f"High risk detected for {document.filename}" if risk_score > 70 else f"Audit finished for {document.filename}"
+        
+        create_notification(
+            db=db,
+            user_id=current_user.id,
+            title=risk_title,
+            message=risk_msg,
+            type=risk_type,
+            entity_type="audit",
+            entity_id=document_id
+        )
+
+        # Send Email — subject and body adjust based on risk level
+        email_body = (
+            f"Your document <strong>{document.filename}</strong> was flagged with a "
+            f"<strong>high risk score of {risk_score}</strong>. Immediate review is recommended "
+            f"to address the compliance violations found."
+            if risk_score > 70
+            else
+            f"The compliance audit for <strong>{document.filename}</strong> completed successfully "
+            f"with a risk score of <strong>{risk_score}</strong>. Review the full report for details."
+        )
+        if current_user.is_subscribed:
+            send_email(
+                to_email=current_user.email,
+                subject=f"DocuAudit AI: {risk_title} — {document.filename}",
+                title=risk_title,
+                message=email_body,
+                type=risk_type,
+                action_label="View Audit Report",
+                action_url=f"http://localhost:5173/report/{document_id}"
+            )
 
         return result
 

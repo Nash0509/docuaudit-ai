@@ -21,4 +21,6 @@ def create_tables():
     import app.models.document
     import app.models.rule
     import app.models.settings
+    import app.models.activity
+    import app.models.notification
     Base.metadata.create_all(bind=engine)

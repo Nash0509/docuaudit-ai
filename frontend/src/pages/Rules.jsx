@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Layout from "../components/layout/Layout";
+import useStore from "../utils/Store";
 import RuleCard from "../components/rules/RuleCard";
 import RuleModal from "../components/rules/RuleModal";
 import { getRules, deleteRule } from "../services/api";
@@ -10,6 +11,7 @@ import EmptyState from "../components/ui/EmptyState";
 import { useToast } from "../components/ui/ToastContext";
 
 export default function Rules() {
+  const setTopBar = useStore(state => state.setTopBar);
   const [rules, setRules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,7 +30,10 @@ export default function Rules() {
     }
   };
 
-  useEffect(() => { fetchRules(); }, []);
+  useEffect(() => { 
+    setTopBar("rules");
+    fetchRules(); 
+  }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this rule?")) return;

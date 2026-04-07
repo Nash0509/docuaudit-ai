@@ -4,11 +4,16 @@ import { getSettings, updateSettings, updatePassword, getCurrentUser } from "../
 import useStore from "../utils/Store";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
+import Select from "../components/ui/Select";
+import { useNavigate } from "react-router-dom";
+import { Zap } from "lucide-react";
 
 export default function Settings() {
+  const setTopBar = useStore(state => state.setTopBar);
   const storeUser = useStore(state => state.user);
   const setStoreUser = useStore(state => state.setUser);
   const [userEmail, setUserEmail] = useState(storeUser?.email || "");
+  const navigate = useNavigate();
   
   const [strictness, setStrictness] = useState("STANDARD");
   const [confidence, setConfidence] = useState(70);
@@ -24,6 +29,7 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    setTopBar("settings");
     async function loadData() {
       try {
         const [settingsData, userData] = await Promise.all([getSettings(), getCurrentUser()]);
@@ -113,16 +119,58 @@ export default function Settings() {
               <Button variant="secondary" onClick={handlePasswordChange}>Change Password</Button>
             </div>
           </Field>
+          
+          <Field label="Subscription Plan" description="Your current billing and usage tier">
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              {storeUser?.is_subscribed ? (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: "8px",
+                  padding: "6px 14px 6px 8px", borderRadius: "100px",
+                  background: "linear-gradient(135deg, rgba(0,212,170,0.12), rgba(37,99,235,0.08))",
+                  border: "1px solid rgba(0,212,170,0.3)",
+                  boxShadow: "0 0 16px rgba(0,212,170,0.1)"
+                }}>
+                  <div style={{ width: "22px", height: "22px", borderRadius: "8px", background: "linear-gradient(135deg,#00d4aa,#2563eb)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Zap size={12} color="#fff" />
+                  </div>
+                  <span style={{ fontSize: "13px", fontWeight: "800", color: "#fff", letterSpacing: "0.02em" }}>Pro Subscriber</span>
+                  <span style={{ fontSize: "10px", fontWeight: "600", color: "rgba(0,212,170,0.8)" }}>· Unlimited</span>
+                </div>
+              ) : (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: "8px",
+                  padding: "6px 14px 6px 10px", borderRadius: "100px",
+                  background: "rgba(251,191,36,0.06)",
+                  border: "1px solid rgba(251,191,36,0.2)"
+                }}>
+                  <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#fbbf24" }} />
+                  <span style={{ fontSize: "13px", fontWeight: "700", color: "#fbbf24" }}>Free Tier</span>
+                  <span style={{ fontSize: "10px", color: "rgba(251,191,36,0.6)" }}>· 1 Audit Included</span>
+                </div>
+              )}
+
+              {!storeUser?.is_subscribed && (
+                <Button variant="primary" onClick={() => navigate("/pricing")} icon={<Zap size={14} />}>
+                  Upgrade to Pro
+                </Button>
+              )}
+            </div>
+          </Field>
         </Section>
 
         {/* AUDIT */}
         <Section title="Audit Configuration" description="Control how the compliance analysis operates">
           <Field label="Strictness Level" description="Determines how aggressively violations are flagged">
-            <Select value={strictness} onChange={(e) => setStrictness(e.target.value)}>
-              <option value="RELAXED">Relaxed</option>
-              <option value="STANDARD">Standard</option>
-              <option value="STRICT">Strict</option>
-            </Select>
+            <Select 
+                value={strictness} 
+                onChange={(val) => setStrictness(val)}
+                options={[
+                    { label: 'Relaxed', value: 'RELAXED' },
+                    { label: 'Standard', value: 'STANDARD' },
+                    { label: 'Strict', value: 'STRICT' },
+                ]}
+                style={{ maxWidth: '320px' }}
+            />
           </Field>
           <Field label="Confidence Threshold" description="Minimum AI confidence required to flag a failure">
             <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
@@ -145,19 +193,29 @@ export default function Settings() {
         {/* AI CAPABILITIES */}
         <Section title="AI Parameters" description="Fine-tune language model integration limits">
           <Field label="Document Context Chunks" description="Number of text chunks embedded per retrieval">
-            <Select value={contextChunks} onChange={e => setContextChunks(e.target.value)}>
-              <option value="3">3 Chunks</option>
-              <option value="5">5 Chunks</option>
-              <option value="7">7 Chunks</option>
-              <option value="10">10 Chunks</option>
-            </Select>
+            <Select 
+                value={contextChunks} 
+                onChange={val => setContextChunks(val)}
+                options={[
+                    { label: '3 Chunks', value: '3' },
+                    { label: '5 Chunks', value: '5' },
+                    { label: '7 Chunks', value: '7' },
+                    { label: '10 Chunks', value: '10' },
+                ]}
+                style={{ maxWidth: '320px' }}
+            />
           </Field>
           <Field label="Response Depth" description="Volume and verbosity of generated AI reasoning">
-            <Select value={analysisDepth} onChange={e => setAnalysisDepth(e.target.value)}>
-              <option value="Concise">Concise</option>
-              <option value="Balanced">Balanced</option>
-              <option value="Detailed">Detailed</option>
-            </Select>
+            <Select 
+                value={analysisDepth} 
+                onChange={val => setAnalysisDepth(val)}
+                options={[
+                    { label: 'Concise', value: 'Concise' },
+                    { label: 'Balanced', value: 'Balanced' },
+                    { label: 'Detailed', value: 'Detailed' },
+                ]}
+                style={{ maxWidth: '320px' }}
+            />
           </Field>
         </Section>
 
@@ -181,8 +239,14 @@ export default function Settings() {
 
 function Section({ title, description, children }) {
   return (
-    <Card hover={false} style={{ marginBottom: "24px", padding: 0, overflow: "hidden" }}>
-      <div style={{ padding: "20px 24px", borderBottom: "1px solid var(--border)", background: "rgba(255,255,255,0.01)" }}>
+    <Card hover={false} style={{ marginBottom: "24px", padding: 0 }}>
+      <div style={{ 
+        padding: "20px 24px", 
+        borderBottom: "1px solid var(--border)", 
+        background: "rgba(255,255,255,0.01)",
+        borderTopLeftRadius: "var(--radius-lg)",
+        borderTopRightRadius: "var(--radius-lg)"
+      }}>
         <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--text-primary)", margin: 0, marginBottom: "4px" }}>{title}</h3>
         <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: 0 }}>{description}</p>
       </div>
@@ -252,23 +316,4 @@ function Input(props) {
   );
 }
 
-function Select(props) {
-  return (
-    <select
-      {...props}
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border)",
-        padding: "0 12px",
-        height: "40px",
-        borderRadius: "var(--radius-md)",
-        color: "var(--text-primary)",
-        fontSize: "14px",
-        fontFamily: "inherit",
-        minWidth: "200px",
-        cursor: "pointer",
-        ...props.style
-      }}
-    />
-  );
-}
+

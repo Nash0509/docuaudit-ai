@@ -8,13 +8,13 @@ function SkeletonRow() {
   return (
     <div style={{
       display: "grid",
-      gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
+      gridTemplateColumns: "2fr 1fr 1fr 1fr",
       padding: "16px",
       gap: "16px",
       borderBottom: "1px solid var(--border)",
       alignItems: "center",
     }}>
-      {[...Array(5)].map((_, i) => (
+      {[...Array(4)].map((_, i) => (
         <div key={i} className="skeleton" style={{ height: "14px", borderRadius: "6px", opacity: i === 0 ? 1 : 0.6 }} />
       ))}
     </div>
@@ -46,7 +46,6 @@ export default function DocumentTable({ variant, refresh }) {
       background: "var(--bg-surface)",
       border: "1px solid var(--border)",
       borderRadius: "var(--radius-lg)",
-      overflow: "hidden",
     }}>
       {/* Table Header */}
       <div style={{
@@ -86,7 +85,7 @@ export default function DocumentTable({ variant, refresh }) {
       {/* Column Headers */}
       <div style={{
         display: "grid",
-        gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr",
+        gridTemplateColumns: "2fr 1fr 1fr 1fr",
         padding: "10px 20px",
         color: "var(--text-muted)",
         fontSize: "11px",
@@ -100,7 +99,6 @@ export default function DocumentTable({ variant, refresh }) {
         <div>Status</div>
         <div>Risk</div>
         <div>Last Audit</div>
-        <div>Actions</div>
       </div>
 
       {/* Rows */}

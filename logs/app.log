@@ -1295,3 +1295,27 @@
 2026-04-05 00:07:58,415 | INFO | docuaudit | Checking rule IP Ownership for 8ee55783-95dd-4ad8-84e0-ca0ed13ec97d
 2026-04-05 00:08:00,648 | ERROR | docuaudit | Rule check failed IP Ownership : Expecting value: line 1 column 1 (char 0)
 2026-04-05 00:08:00,651 | INFO | docuaudit | Audit finished 8ee55783-95dd-4ad8-84e0-ca0ed13ec97d
+2026-04-05 02:44:52,616 | INFO | docuaudit | Starting audit ce9b7323-9848-43ab-9e87-15765b8041b6 with rule_ids=['d87aeb3a-df0e-41ac-9274-ae73d3c0221b', '85a4af86-0af3-42fa-b3ef-4ff2345a796b', 'f85ba081-eb42-4fba-ae2e-3f88f0843b3a', '03e5c7b0-f165-489d-8054-73e0a7232f77', '81e3c7bf-5ba0-4da9-9ddc-bf5acb61bb31', 'df481a38-684a-4c6b-afee-9a82944e56eb']
+2026-04-05 02:44:52,629 | INFO | docuaudit | Checking rule Termination Notice for ce9b7323-9848-43ab-9e87-15765b8041b6
+2026-04-05 02:44:54,047 | INFO | docuaudit | Checking rule Data Privacy Compliance for ce9b7323-9848-43ab-9e87-15765b8041b6
+2026-04-05 02:44:55,151 | INFO | docuaudit | Checking rule Limitation of Liability for ce9b7323-9848-43ab-9e87-15765b8041b6
+2026-04-05 02:44:55,932 | INFO | docuaudit | Checking rule Payment Terms for ce9b7323-9848-43ab-9e87-15765b8041b6
+2026-04-05 02:44:56,760 | INFO | docuaudit | Checking rule dfjdjdjdfj for ce9b7323-9848-43ab-9e87-15765b8041b6
+2026-04-05 02:44:58,200 | INFO | docuaudit | Checking rule IP Ownership for ce9b7323-9848-43ab-9e87-15765b8041b6
+2026-04-05 02:44:59,356 | INFO | docuaudit | Audit finished ce9b7323-9848-43ab-9e87-15765b8041b6
+2026-04-05 03:01:44,548 | INFO | docuaudit | Starting audit d5e13c1d-3372-4215-adf3-6cbfc0685017 with rule_ids=['85a4af86-0af3-42fa-b3ef-4ff2345a796b', 'f85ba081-eb42-4fba-ae2e-3f88f0843b3a', '03e5c7b0-f165-489d-8054-73e0a7232f77', '81e3c7bf-5ba0-4da9-9ddc-bf5acb61bb31', 'd87aeb3a-df0e-41ac-9274-ae73d3c0221b']
+2026-04-05 03:01:44,559 | INFO | docuaudit | Checking rule Termination Notice for d5e13c1d-3372-4215-adf3-6cbfc0685017
+2026-04-05 03:01:47,163 | INFO | docuaudit | Checking rule Data Privacy Compliance for d5e13c1d-3372-4215-adf3-6cbfc0685017
+2026-04-05 03:01:47,978 | INFO | docuaudit | Checking rule Limitation of Liability for d5e13c1d-3372-4215-adf3-6cbfc0685017
+2026-04-05 03:01:48,903 | INFO | docuaudit | Checking rule Payment Terms for d5e13c1d-3372-4215-adf3-6cbfc0685017
+2026-04-05 03:01:49,719 | INFO | docuaudit | Checking rule IP Ownership for d5e13c1d-3372-4215-adf3-6cbfc0685017
+2026-04-05 03:01:50,404 | INFO | docuaudit | Audit finished d5e13c1d-3372-4215-adf3-6cbfc0685017
+2026-04-05 03:19:27,983 | INFO | docuaudit | Email sent to nishantsinghworkshard@gmail.com: DocuAudit AI: Document Uploaded — nishant_me_2.pdf
+2026-04-05 03:20:17,550 | INFO | docuaudit | Starting audit f7546e80-5853-4f15-86fc-3b723ecb781e with rule_ids=['d87aeb3a-df0e-41ac-9274-ae73d3c0221b', '85a4af86-0af3-42fa-b3ef-4ff2345a796b', 'f85ba081-eb42-4fba-ae2e-3f88f0843b3a', '03e5c7b0-f165-489d-8054-73e0a7232f77', '81e3c7bf-5ba0-4da9-9ddc-bf5acb61bb31']
+2026-04-05 03:20:17,562 | INFO | docuaudit | Checking rule Termination Notice for f7546e80-5853-4f15-86fc-3b723ecb781e
+2026-04-05 03:20:19,138 | INFO | docuaudit | Checking rule Data Privacy Compliance for f7546e80-5853-4f15-86fc-3b723ecb781e
+2026-04-05 03:20:19,726 | INFO | docuaudit | Checking rule Limitation of Liability for f7546e80-5853-4f15-86fc-3b723ecb781e
+2026-04-05 03:20:20,956 | INFO | docuaudit | Checking rule Payment Terms for f7546e80-5853-4f15-86fc-3b723ecb781e
+2026-04-05 03:20:21,986 | INFO | docuaudit | Checking rule IP Ownership for f7546e80-5853-4f15-86fc-3b723ecb781e
+2026-04-05 03:20:23,005 | INFO | docuaudit | Audit finished f7546e80-5853-4f15-86fc-3b723ecb781e
+2026-04-05 03:20:28,558 | INFO | docuaudit | Email sent to nishantsinghworkshard@gmail.com: DocuAudit AI: High Risk Detected — nishant_me_2.pdf

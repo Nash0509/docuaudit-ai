@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function DropdownMenu({ items }) {
+export default function DropdownMenu({ items, trigger, align = 'right', onOpenChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
+
+  useEffect(() => {
+    if (onOpenChange) onOpenChange(isOpen);
+  }, [isOpen, onOpenChange]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -18,55 +22,83 @@ export default function DropdownMenu({ items }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
+  const defaultTrigger = (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsOpen(!isOpen);
+      }}
+      style={{
+        background: isOpen ? 'var(--bg-surface-hover)' : 'transparent',
+        border: 'none',
+        color: isOpen ? 'var(--text-primary)' : 'var(--text-muted)',
+        cursor: 'pointer',
+        padding: '6px',
+        borderRadius: 'var(--radius-md)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transition: 'all 0.15s ease',
+      }}
+    >
+      <MoreHorizontal size={16} />
+    </button>
+  );
+
   return (
     <div ref={menuRef} style={{ position: 'relative', display: 'inline-block' }}>
-      <button
+      <div 
         onClick={(e) => {
+          if (!trigger) return; // Default trigger handles its own click
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        style={{
-          background: isOpen ? 'var(--bg-surface-hover)' : 'transparent',
-          border: 'none',
-          color: isOpen ? 'var(--text-primary)' : 'var(--text-muted)',
-          cursor: 'pointer',
-          padding: '6px',
-          borderRadius: 'var(--radius-md)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transition: 'all var(--ease-out)',
-        }}
+        style={{ cursor: trigger ? 'pointer' : 'default' }}
       >
-        <MoreHorizontal size={16} />
-      </button>
+        {trigger || defaultTrigger}
+      </div>
 
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            initial={{ opacity: 0, scale: 0.96, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -4 }}
-            transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            exit={{ opacity: 0, scale: 0.96, y: -8 }}
+            transition={{ 
+              type: "spring", 
+              stiffness: 400, 
+              damping: 30, 
+              mass: 0.8 
+            }}
             style={{
               position: 'absolute',
-              right: 0,
+              [align]: 0,
               top: '100%',
-              marginTop: '4px',
-              minWidth: '160px',
+              marginTop: '8px',
+              minWidth: '220px',
               background: 'rgba(15, 23, 42, 0.98)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-md)',
-              padding: '6px',
-              boxShadow: 'var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.02)',
-              zIndex: 50,
-              transformOrigin: 'top right'
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: '16px',
+              padding: '8px',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)',
+              zIndex: 1000,
+              transformOrigin: align === 'right' ? 'top right' : 'top left'
             }}
           >
             {items.map((item, index) => {
               if (item.type === 'divider') {
-                return <div key={`div-${index}`} style={{ height: '1px', background: 'var(--border)', margin: '4px -6px' }} />;
+                return (
+                  <div 
+                    key={`div-${index}`} 
+                    style={{ 
+                      height: '1px', 
+                      background: 'rgba(255,255,255,0.06)', 
+                      margin: '4px -6px' 
+                    }} 
+                  />
+                );
               }
 
               return (
@@ -83,23 +115,44 @@ export default function DropdownMenu({ items }) {
                     textAlign: 'left',
                     background: 'transparent',
                     border: 'none',
-                    padding: '8px 10px',
-                    borderRadius: '4px',
-                    color: item.danger ? 'var(--danger)' : 'var(--text-primary)',
+                    padding: '10px 12px',
+                    borderRadius: '8px',
+                    color: item.danger ? 'var(--danger)' : 'var(--text-secondary)',
                     fontSize: '13px',
                     fontWeight: '500',
                     cursor: item.disabled ? 'not-allowed' : 'pointer',
                     opacity: item.disabled ? 0.5 : 1,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px',
-                    transition: 'background var(--ease-out)'
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    transition: 'all 0.15s ease'
                   }}
-                  onMouseEnter={(e) => { if (!item.disabled) e.currentTarget.style.background = item.danger ? 'var(--danger-dim)' : 'var(--bg-surface-hover)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                  onMouseEnter={(e) => { 
+                    if (!item.disabled) {
+                      e.currentTarget.style.background = item.danger ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.06)';
+                      e.currentTarget.style.color = item.danger ? 'var(--danger)' : 'var(--text-primary)';
+                    }
+                  }}
+                  onMouseLeave={(e) => { 
+                    e.currentTarget.style.background = 'transparent'; 
+                    e.currentTarget.style.color = item.danger ? 'var(--danger)' : 'var(--text-secondary)';
+                  }}
                 >
-                  {item.icon && <span style={{ opacity: 0.7 }}>{item.icon}</span>}
-                  {item.label}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {item.icon && <span style={{ opacity: 0.8, display: 'flex' }}>{item.icon}</span>}
+                    {item.label}
+                  </div>
+                  {item.shortcut && (
+                    <span style={{ 
+                      fontSize: '10px', 
+                      color: 'var(--text-muted)', 
+                      opacity: 0.5, 
+                      fontFamily: 'monospace' 
+                    }}>
+                      {item.shortcut}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -109,3 +162,4 @@ export default function DropdownMenu({ items }) {
     </div>
   );
 }
+

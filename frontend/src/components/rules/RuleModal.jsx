@@ -3,6 +3,7 @@ import { X, ShieldAlert } from "lucide-react";
 import { createRule, updateRule } from "../../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "../ui/Button";
+import Select from "../ui/Select";
 
 const inputStyle = {
   width: "100%",
@@ -94,7 +95,6 @@ export default function RuleModal({ isOpen, onClose, onSuccess, initialData = nu
               width: "100%",
               maxWidth: "500px",
               boxShadow: "var(--shadow-lg)",
-              overflow: "hidden",
             }}
           >
             {/* Header */}
@@ -103,6 +103,8 @@ export default function RuleModal({ isOpen, onClose, onSuccess, initialData = nu
               padding: "22px 28px 18px",
               borderBottom: "1px solid var(--border)",
               background: "rgba(255,255,255,0.01)",
+              borderTopLeftRadius: "var(--radius-xl)",
+              borderTopRightRadius: "var(--radius-xl)"
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "var(--accent-dim)", border: "1px solid var(--border-accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -164,16 +166,16 @@ export default function RuleModal({ isOpen, onClose, onSuccess, initialData = nu
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                   <div>
                     <label style={labelStyle}>Severity</label>
-                    <select
+                    <Select
                       value={formData.severity}
-                      onChange={e => setFormData({ ...formData, severity: e.target.value })}
-                      style={{ ...inputStyle, cursor: "pointer" }}
-                    >
-                      <option value="LOW">Low</option>
-                      <option value="MEDIUM">Medium</option>
-                      <option value="HIGH">High</option>
-                      <option value="CRITICAL">Critical</option>
-                    </select>
+                      onChange={val => setFormData({ ...formData, severity: val })}
+                      options={[
+                        { label: 'Low', value: 'LOW' },
+                        { label: 'Medium', value: 'MEDIUM' },
+                        { label: 'High', value: 'HIGH' },
+                        { label: 'Critical', value: 'CRITICAL' },
+                      ]}
+                    />
                   </div>
 
                   <div>

@@ -6,6 +6,7 @@ import AuditProgress from "./AuditProgress";
 import { motion, AnimatePresence } from "framer-motion";
 import Button from "../ui/Button";
 import Badge from "../ui/Badge";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "../ui/ToastContext";
 
 export default function AuditConfigModal({ isOpen, onClose, documentId, onAuditComplete }) {
@@ -14,6 +15,7 @@ export default function AuditConfigModal({ isOpen, onClose, documentId, onAuditC
   const [loadingRules, setLoadingRules] = useState(true);
   const [auditing, setAuditing] = useState(false);
   const toast = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isOpen) {
@@ -38,7 +40,7 @@ export default function AuditConfigModal({ isOpen, onClose, documentId, onAuditC
   const handleRunAudit = async () => {
     if (selectedRuleIds.length === 0) return;
     setAuditing(true);
-    // Let AuditProgress handle the visual wait, then we send the actual API
+    
     try {
       const result = await runAudit(documentId, selectedRuleIds);
       // Wait a moment for UX
@@ -50,8 +52,17 @@ export default function AuditConfigModal({ isOpen, onClose, documentId, onAuditC
       }, 8500); // AuditProgress has fixed animation of ~8.5s for showcase
     } catch (e) {
       console.error(e);
-      toast.error("Audit Failed", "There was a problem running the audit. Please try again.");
       setAuditing(false);
+      
+      // Handle Paywall Block (Limit Reached)
+      if (e.response && (e.response.status === 402 || e.response.status === 403)) {
+         onClose();
+         toast.error("Usage Limit Reached", "Your first free audit is complete. Please upgrade to Pro to continue.");
+         navigate("/pricing");
+         return;
+      }
+
+      toast.error("Audit Failed", "There was a problem running the audit. Please try again.");
     }
   };
 

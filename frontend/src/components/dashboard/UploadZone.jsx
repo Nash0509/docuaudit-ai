@@ -3,16 +3,29 @@ import { Upload, FileText, CheckCircle, XCircle, Trash2, RefreshCw, CloudUpload 
 import { uploadDocument } from "../../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 
+import useStore from "../../utils/Store";
+import { useNavigate } from "react-router-dom";
+
 export default function UploadZone({ onUploadSuccess }) {
   const [drag, setDrag] = useState(false);
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
+  
+  const user = useStore(state => state.user);
+  const navigate = useNavigate();
 
   function handleDrop(e) {
     e.preventDefault();
     setDrag(false);
+    
+    // Quick frontend check before uploading
+    if (user?.audit_count >= 1 && !user?.is_subscribed) {
+       navigate("/pricing");
+       return;
+    }
+
     const dropped = e.dataTransfer.files[0];
     if (dropped) { setFile(dropped); resetStates(); }
   }
@@ -22,6 +35,15 @@ export default function UploadZone({ onUploadSuccess }) {
   }
 
   function removeFile() { setFile(null); resetStates(); }
+  
+  function handleFileSelect(e) {
+     if (user?.audit_count >= 1 && !user?.is_subscribed) {
+        navigate("/pricing");
+        return;
+     }
+     setFile(e.target.files[0]);
+     resetStates();
+  }
 
   async function startUpload() {
     if (!file) return;
@@ -31,6 +53,10 @@ export default function UploadZone({ onUploadSuccess }) {
       setSuccess(true); setFile(null);
       if (onUploadSuccess) onUploadSuccess();
     } catch (e) {
+      if (e.response && e.response.status === 402) {
+         navigate("/pricing");
+         return;
+      }
       setError(true);
     } finally {
       setUploading(false);
@@ -76,7 +102,7 @@ export default function UploadZone({ onUploadSuccess }) {
           Drag & drop your PDF or click to browse
         </div>
 
-        <input type="file" accept=".pdf" style={{ display: "none" }} id="fileUpload" onChange={(e) => { setFile(e.target.files[0]); resetStates(); }} />
+        <input type="file" accept=".pdf" style={{ display: "none" }} id="fileUpload" onChange={handleFileSelect} />
         <label htmlFor="fileUpload" style={{
           display: "inline-flex",
           alignItems: "center",

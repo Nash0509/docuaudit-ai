@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, FileText, ShieldCheck,
-  BarChart2, Settings
+  BarChart2, Settings, User, Zap
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -13,6 +13,7 @@ const navItems = [
   { key: "reports", label: "Audit Reports", path: "/reports", icon: BarChart2 },
   { key: "rules", label: "Rules", path: "/rules", icon: ShieldCheck, shortcut: "R" },
   { key: "settings", label: "Settings", path: "/settings", icon: Settings },
+  { key: "profile", label: "Profile", path: "/profile", icon: User, shortcut: "P" },
 ];
 
 function NavItem({ item, active, onClick }) {
@@ -87,9 +88,11 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const setTopBar = useStore((state) => state.setTopBar);
+  const user = useStore((state) => state.user);
 
   useShortcut(['Control', 'd'], () => { setTopBar("documents"); navigate("/documents"); });
   useShortcut(['Control', 'r'], () => { setTopBar("rules"); navigate("/rules"); });
+  useShortcut(['Control', 'p'], () => { setTopBar("profile"); navigate("/profile"); });
 
   return (
     <div style={{
@@ -101,37 +104,56 @@ export default function Sidebar() {
       height: "100vh",
       position: "sticky",
       top: 0,
+      zIndex: 50,
       display: "flex",
       flexDirection: "column",
     }}>
       {/* Logo */}
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "10px",
-        marginBottom: "32px",
-        padding: "4px 12px",
-      }}>
-        <div style={{
-          width: "32px",
-          height: "32px",
-          borderRadius: "10px",
-          background: "linear-gradient(135deg, #00d4aa, #2563eb)",
+      <div 
+        onClick={() => {
+          setTopBar("dashboard");
+          navigate("/");
+        }}
+        style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          fontSize: "14px",
-          fontWeight: "700",
-          color: "#020617",
-          flexShrink: 0,
-        }}>
-          D
-        </div>
+          gap: "12px",
+          marginBottom: "32px",
+          padding: "8px 12px",
+          borderRadius: "12px",
+          cursor: "pointer",
+          transition: "background 0.2s ease, transform 0.1s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "rgba(255, 255, 255, 0.03)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "transparent";
+        }}
+        onMouseDown={(e) => {
+          e.currentTarget.style.transform = "scale(0.98)";
+        }}
+        onMouseUp={(e) => {
+          e.currentTarget.style.transform = "scale(1)";
+        }}
+      >
+        <img 
+          src="/logo.png" 
+          alt="DocuAudit Logo" 
+          style={{
+            width: "32px",
+            height: "32px",
+            borderRadius: "8px",
+            objectFit: "cover",
+            boxShadow: "0 4px 12px rgba(0, 212, 170, 0.2)",
+            flexShrink: 0
+          }} 
+        />
         <div>
-          <div style={{ fontSize: "15px", fontWeight: "700", color: "var(--text-primary)", lineHeight: 1, letterSpacing: "-0.02em" }}>
+          <div style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-primary)", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
             DocuAudit
           </div>
-          <div style={{ fontSize: "10px", color: "var(--accent)", fontWeight: "700", letterSpacing: "0.06em", textTransform: "uppercase" }}>
+          <div style={{ fontSize: "10px", color: "var(--accent)", fontWeight: "800", letterSpacing: "0.08em", textTransform: "uppercase" }}>
             AI Framework
           </div>
         </div>
@@ -165,20 +187,112 @@ export default function Sidebar() {
         ))}
       </div>
 
-      {/* Bottom version tag */}
-      <div style={{
-        padding: "16px 12px 0",
-        borderTop: "1px dashed var(--border)",
-        marginTop: "auto",
-        display: "flex",
-        flexDirection: "column",
-        gap: "4px"
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--success)" }} />
-          <div style={{ fontSize: "12px", fontWeight: "500", color: "var(--text-secondary)" }}>Systems Local</div>
+      {/* Bottom Upgrade / Status block */}
+      <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "12px" }}>
+        
+        {user?.is_subscribed ? (
+          /* PRO BADGE */
+          <div style={{
+            position: "relative",
+            padding: "14px",
+            borderRadius: "14px",
+            background: "linear-gradient(135deg, rgba(0,212,170,0.12) 0%, rgba(37,99,235,0.08) 100%)",
+            border: "1px solid rgba(0,212,170,0.25)",
+            overflow: "hidden",
+          }}>
+            {/* shimmer line at top */}
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "1px", background: "linear-gradient(90deg, transparent, rgba(0,212,170,0.8), transparent)" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{
+                width: "30px", height: "30px", borderRadius: "10px", flexShrink: 0,
+                background: "linear-gradient(135deg, #00d4aa, #2563eb)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 0 12px rgba(0,212,170,0.4)"
+              }}>
+                <ShieldCheck size={15} color="#fff" />
+              </div>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <div style={{ fontSize: "13px", fontWeight: "800", color: "#fff", letterSpacing: "-0.01em" }}>Pro</div>
+                  <div style={{
+                    fontSize: "9px", fontWeight: "700", padding: "1px 5px",
+                    background: "linear-gradient(90deg,#00d4aa,#2563eb)", color: "#000",
+                    borderRadius: "4px", letterSpacing: "0.05em", textTransform: "uppercase"
+                  }}>Active</div>
+                </div>
+                <div style={{ fontSize: "10px", color: "rgba(0,212,170,0.7)", marginTop: "1px" }}>Unlimited Audits · All Features</div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* FREE TIER UPGRADE CARD */
+          <div
+            onClick={() => { setTopBar("pricing"); navigate("/pricing"); }}
+            style={{
+              position: "relative",
+              padding: "14px",
+              borderRadius: "14px",
+              background: "rgba(255,255,255,0.025)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              cursor: "pointer",
+              overflow: "hidden",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "rgba(0,212,170,0.3)";
+              e.currentTarget.style.background = "rgba(0,212,170,0.04)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+              e.currentTarget.style.background = "rgba(255,255,255,0.025)";
+            }}
+          >
+            {/* usage bar */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+              <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-primary)", letterSpacing: "0.01em" }}>Free Tier</span>
+              <span style={{
+                fontSize: "9px", fontWeight: "700", padding: "2px 7px",
+                background: (user?.audit_count || 0) >= 1 ? "rgba(239,68,68,0.15)" : "rgba(251,191,36,0.15)",
+                color: (user?.audit_count || 0) >= 1 ? "#f87171" : "#fbbf24",
+                border: `1px solid ${(user?.audit_count || 0) >= 1 ? "rgba(239,68,68,0.3)" : "rgba(251,191,36,0.3)"}`,
+                borderRadius: "5px", letterSpacing: "0.03em"
+              }}>
+                {user?.audit_count || 0}/1 USED
+              </span>
+            </div>
+            {/* progress bar */}
+            <div style={{ height: "3px", background: "rgba(255,255,255,0.05)", borderRadius: "2px", marginBottom: "10px" }}>
+              <div style={{
+                height: "100%", borderRadius: "2px",
+                width: `${Math.min((user?.audit_count || 0) * 100, 100)}%`,
+                background: (user?.audit_count || 0) >= 1
+                  ? "linear-gradient(90deg,#ef4444,#f97316)"
+                  : "linear-gradient(90deg,#fbbf24,#f59e0b)",
+                transition: "width 0.5s ease"
+              }} />
+            </div>
+            <div style={{ fontSize: "10px", color: "var(--text-muted)", marginBottom: "10px", lineHeight: 1.5 }}>
+              Get unlimited audits, priority AI, and email reports.
+            </div>
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
+              padding: "7px", borderRadius: "8px",
+              background: "linear-gradient(135deg,rgba(0,212,170,0.15),rgba(37,99,235,0.1))",
+              border: "1px solid rgba(0,212,170,0.2)",
+              fontSize: "11px", fontWeight: "700", color: "var(--accent)",
+            }}>
+              <Zap size={11} /> Upgrade to Pro · ₹99/mo
+            </div>
+          </div>
+        )}
+
+        <div style={{ padding: "10px 0 0", borderTop: "1px dashed var(--border)", display: "flex", flexDirection: "column", gap: "4px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: "var(--success)", boxShadow: "0 0 4px var(--success)" }} />
+            <div style={{ fontSize: "11px", fontWeight: "500", color: "var(--text-secondary)" }}>Systems Local</div>
+          </div>
+          <div style={{ fontSize: "10px", color: "var(--text-muted)", fontFamily: "monospace" }}>v1.0.3 · Stable</div>
         </div>
-        <div style={{ fontSize: "11px", color: "var(--text-muted)", fontFamily: "monospace" }}>v1.0.3 · Stable</div>
       </div>
     </div>
   );
