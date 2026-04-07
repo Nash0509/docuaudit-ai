@@ -11,11 +11,23 @@ from app.services.rule_service import seed_default_rules
 with SessionLocal() as db:
     seed_default_rules(db)
 
+import os
+
 app = FastAPI(title="DocuAudit AI", version="1.0.0")
+
+# Support frontend domain from environment variable (Vercel)
+frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+origins = [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://localhost:3000",
+    frontend_url
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:3000"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

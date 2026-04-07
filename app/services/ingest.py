@@ -1,10 +1,11 @@
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
-import chromadb
-from app.core.config import CHROMA_PATH, EMBEDDING_MODEL
+from app.core.config import EMBEDDING_MODEL
+from app.services.vector_service import vector_service
+from app.core.logger import logger
+import os
 
 embedding_model = SentenceTransformer(EMBEDDING_MODEL)
-chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
 
 def load_pdf(path: str) -> str:
     reader = PdfReader(path)
@@ -26,16 +27,30 @@ def get_embedding(text: str) -> list:
     return embedding_model.encode(text).tolist()
 
 def ingest_document(file_path: str, doc_id: str) -> int:
-    collection = chroma_client.get_or_create_collection(name=doc_id.replace(".pdf", ""))
+    logger.info(f"Ingesting document {doc_id}")
     raw_text = load_pdf(file_path)
     chunks = split_into_chunks(raw_text)
+    embeddings = [get_embedding(chunk) for chunk in chunks]
 
-    for i, chunk in enumerate(chunks):
-        embedding = get_embedding(chunk)
-        collection.add(
-            ids=[f"chunk_{i}"],
-            embeddings=[embedding],
-            documents=[chunk]
-        )
+    # Use the consolidated vector service
+    vector_service.store_chunks(doc_id, chunks, embeddings)
+
+    # If in cloud mode, we also push the vectors to Supabase if not handled by VectorService
+    if vector_service.use_cloud:
+        from app.core.supabase import supabase
+        if supabase:
+            try:
+                data = [
+                    {
+                        "document_id": doc_id,
+                        "content": chunk,
+                        "embedding": emb
+                    } 
+                    for chunk, emb in zip(chunks, embeddings)
+                ]
+                supabase.table("document_chunks").insert(data).execute()
+                logger.info(f"Pushed {len(chunks)} chunks to Supabase pgvector")
+            except Exception as e:
+                logger.error(f"Failed to push chunks to Supabase: {str(e)}")
 
     return len(chunks)

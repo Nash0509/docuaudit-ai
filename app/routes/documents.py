@@ -52,8 +52,37 @@ async def upload_document(
 
     file_path = os.path.join(DOCS_PATH, f"{document_id}.pdf")
 
-    with open(file_path,"wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    # Cloud Storage Logic (Supabase)
+    use_cloud_storage = os.getenv("SUPABASE_URL") is not None
+    if use_cloud_storage:
+        from app.core.supabase import supabase
+        if supabase:
+            try:
+                # Read file for upload
+                file.file.seek(0)
+                file_content = file.file.read()
+                
+                # Upload to 'documents' bucket
+                supabase.storage.from_("documents").upload(
+                    path=f"{document_id}.pdf",
+                    file=file_content,
+                    file_options={"content-type": "application/pdf"}
+                )
+                logger.info(f"Uploaded {file.filename} to Supabase Storage")
+                
+                # We still save locally for the immediate ingestion step (avoiding network download for now)
+                # Render/Free tier has enough local disk for a single process
+                with open(file_path, "wb") as buffer:
+                    buffer.write(file_content)
+            except Exception as e:
+                logger.error(f"Supabase upload failed: {str(e)}")
+                # Fallback to local if upload fails
+                file.file.seek(0)
+                with open(file_path,"wb") as buffer:
+                    shutil.copyfileobj(file.file, buffer)
+    else:
+        with open(file_path,"wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
 
     new_doc.status = "processing"
     db.commit()
