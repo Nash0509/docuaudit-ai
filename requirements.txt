@@ -12,7 +12,7 @@ supabase
 groq
 pypdf
 reportlab
-sentence-transformers
+fastembed
 
 # Auth & Security
 python-dotenv
