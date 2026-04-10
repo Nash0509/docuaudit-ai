@@ -46,6 +46,7 @@ export default function DocumentTable({ variant, refresh }) {
       background: "var(--bg-surface)",
       border: "1px solid var(--border)",
       borderRadius: "var(--radius-lg)",
+      overflow: "hidden", // Ensure children don't overflow the rounded corners
     }}>
       {/* Table Header */}
       <div style={{
@@ -82,45 +83,50 @@ export default function DocumentTable({ variant, refresh }) {
         </button>
       </div>
 
-      {/* Column Headers */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "2fr 1fr 1fr 1fr",
-        padding: "10px 20px",
-        color: "var(--text-muted)",
-        fontSize: "11px",
-        letterSpacing: "0.06em",
-        textTransform: "uppercase",
-        fontWeight: "600",
-        borderBottom: "1px solid var(--border)",
-        background: "rgba(255,255,255,0.015)",
-      }}>
-        <div>Document</div>
-        <div>Status</div>
-        <div>Risk</div>
-        <div>Last Audit</div>
-      </div>
+      {/* Scrollable Container */}
+      <div style={{ overflowX: "auto", minWidth: "100%" }}>
+        <div style={{ minWidth: "700px" }}> {/* Ensure a minimum width for the table content */}
+          {/* Column Headers */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "2fr 1fr 1fr 1fr",
+            padding: "10px 20px",
+            color: "var(--text-muted)",
+            fontSize: "11px",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            fontWeight: "600",
+            borderBottom: "1px solid var(--border)",
+            background: "rgba(255,255,255,0.015)",
+          }}>
+            <div>Document</div>
+            <div>Status</div>
+            <div>Risk</div>
+            <div>Last Audit</div>
+          </div>
 
-      {/* Rows */}
-      {loading ? (
-        [...Array(4)].map((_, i) => <SkeletonRow key={i} />)
-      ) : documents.length === 0 ? (
-        <EmptyState
-          title="No documents yet"
-          description="Upload your first contract to start AI compliance analysis"
-          actionText="Upload Contract"
-          onAction={() => {}}
-        />
-      ) : (
-        documents.map((doc) => (
-          <DocumentRow
-            key={doc.document_id}
-            variant={variant}
-            doc={doc}
-            onAuditComplete={refreshTable}
-          />
-        ))
-      )}
+          {/* Rows */}
+          {loading ? (
+            [...Array(4)].map((_, i) => <SkeletonRow key={i} />)
+          ) : documents.length === 0 ? (
+            <EmptyState
+              title="No documents yet"
+              description="Upload your first contract to start AI compliance analysis"
+              actionText="Upload Contract"
+              onAction={() => {}}
+            />
+          ) : (
+            documents.map((doc) => (
+              <DocumentRow
+                key={doc.document_id}
+                variant={variant}
+                doc={doc}
+                onAuditComplete={refreshTable}
+              />
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }

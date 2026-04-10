@@ -9,9 +9,11 @@ import Button from "../components/ui/Button";
 import Skeleton from "../components/ui/Skeleton";
 import EmptyState from "../components/ui/EmptyState";
 import { useToast } from "../components/ui/ToastContext";
+import useMediaQuery from "../utils/useMediaQuery";
 
 export default function Rules() {
   const setTopBar = useStore(state => state.setTopBar);
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const [rules, setRules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,7 +73,7 @@ export default function Rules() {
            description={`There are no rules in the "${title}" section.`}
         />
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "16px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(320px, 1fr))", gap: "16px" }}>
           {data.map(rule => (
             <RuleCard key={rule.id} rule={rule} isSystem={isSystem} onEdit={openModal} onDelete={handleDelete} />
           ))}
@@ -82,20 +84,31 @@ export default function Rules() {
 
   return (
     <Layout>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px", background: "var(--bg-surface)", padding: "24px 28px", borderRadius: "var(--radius-lg)", border: "1px solid var(--border)" }}>
+      <div style={{ 
+        display: "flex", 
+        flexDirection: isMobile ? "column" : "row",
+        justifyContent: "space-between", 
+        alignItems: isMobile ? "flex-start" : "center", 
+        marginBottom: "32px", 
+        background: "var(--bg-surface)", 
+        padding: "24px 28px", 
+        borderRadius: "var(--radius-lg)", 
+        border: "1px solid var(--border)",
+        gap: isMobile ? "20px" : "0"
+      }}>
         <div>
           <h1 style={{ fontSize: "20px", fontWeight: "700", marginBottom: "4px", color: "var(--text-primary)", letterSpacing: "-0.02em" }}>Compliance Rules</h1>
           <p style={{ color: "var(--text-secondary)", margin: 0, fontSize: "14px" }}>
-            Manage the criteria and legal checks for your document audits.
+            Legal criteria for audits.
           </p>
         </div>
-        <Button variant="primary" onClick={() => openModal()} icon={<Plus size={16} />}>
+        <Button variant="primary" onClick={() => openModal()} icon={<Plus size={16} />} style={{ width: isMobile ? "100%" : "auto" }}>
           Create Rule
         </Button>
       </div>
 
       {loading ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "16px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(320px, 1fr))", gap: "16px" }}>
           {[...Array(6)].map((_, i) => (
             <Skeleton key={i} height="180px" />
           ))}

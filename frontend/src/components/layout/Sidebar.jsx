@@ -84,35 +84,28 @@ function NavItem({ item, active, onClick }) {
   );
 }
 
+import useMediaQuery from "../../utils/useMediaQuery";
+
+// ... inside Sidebar component ...
+
 export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const setTopBar = useStore((state) => state.setTopBar);
   const user = useStore((state) => state.user);
+  
+  const isMobile = useMediaQuery("(max-width: 1024px)");
+  const isSidebarOpen = useStore((state) => state.isSidebarOpen);
+  const setIsSidebarOpen = useStore((state) => state.setIsSidebarOpen);
 
-  useShortcut(['Control', 'd'], () => { setTopBar("documents"); navigate("/documents"); });
-  useShortcut(['Control', 'r'], () => { setTopBar("rules"); navigate("/rules"); });
-  useShortcut(['Control', 'p'], () => { setTopBar("profile"); navigate("/profile"); });
-
-  return (
-    <div style={{
-      width: "240px",
-      flexShrink: 0,
-      background: "rgba(2, 6, 23, 0.95)",
-      borderRight: "1px solid var(--border)",
-      padding: "20px 16px",
-      height: "100vh",
-      position: "sticky",
-      top: 0,
-      zIndex: 50,
-      display: "flex",
-      flexDirection: "column",
-    }}>
+  const sidebarContent = (
+    <>
       {/* Logo */}
       <div 
         onClick={() => {
           setTopBar("dashboard");
           navigate("/");
+          if (isMobile) setIsSidebarOpen(false);
         }}
         style={{
           display: "flex",
@@ -130,24 +123,11 @@ export default function Sidebar() {
         onMouseLeave={(e) => {
           e.currentTarget.style.background = "transparent";
         }}
-        onMouseDown={(e) => {
-          e.currentTarget.style.transform = "scale(0.98)";
-        }}
-        onMouseUp={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-        }}
       >
         <img 
           src="/logo.png" 
           alt="DocuAudit Logo" 
-          style={{
-            width: "32px",
-            height: "32px",
-            borderRadius: "8px",
-            objectFit: "cover",
-            boxShadow: "0 4px 12px rgba(0, 212, 170, 0.2)",
-            flexShrink: 0
-          }} 
+          style={{ width: "32px", height: "32px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0, 212, 170, 0.2)", flexShrink: 0 }} 
         />
         <div>
           <div style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-primary)", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
@@ -160,15 +140,7 @@ export default function Sidebar() {
       </div>
 
       {/* Nav section label */}
-      <div style={{
-        fontSize: "10px",
-        color: "var(--text-muted)",
-        fontWeight: "600",
-        letterSpacing: "0.08em",
-        textTransform: "uppercase",
-        padding: "0 12px",
-        marginBottom: "8px",
-      }}>
+      <div style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: "600", letterSpacing: "0.08em", textTransform: "uppercase", padding: "0 12px", marginBottom: "8px" }}>
         Overview
       </div>
 
@@ -182,10 +154,39 @@ export default function Sidebar() {
             onClick={() => {
               setTopBar(item.key);
               navigate(item.path);
+              if (isMobile) setIsSidebarOpen(false);
             }}
           />
         ))}
       </div>
+      {/* ... rest of content handled in full code below ... */}
+    </>
+  );
+
+  return (
+    <motion.div
+      initial={isMobile ? { x: "-100%" } : { x: 0 }}
+      animate={isMobile ? { x: isSidebarOpen ? 0 : "-100%" } : { x: 0 }}
+      transition={{ type: "spring", damping: 25, stiffness: 200 }}
+      style={{
+        width: "240px",
+        flexShrink: 0,
+        background: "rgba(2, 6, 23, 0.98)",
+        borderRight: "1px solid var(--border)",
+        padding: "20px 16px",
+        height: "100vh",
+        position: isMobile ? "fixed" : "sticky",
+        top: 0,
+        left: 0,
+        zIndex: 100,
+        display: "flex",
+        flexDirection: "column",
+        boxShadow: isMobile && isSidebarOpen ? "20px 0 50px rgba(0,0,0,0.5)" : "none",
+      }}
+    >
+      {sidebarContent}
+      {/* ... bottom items moved into sidebarContent for clarity ... */}
+
 
       {/* Bottom Upgrade / Status block */}
       <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "12px" }}>

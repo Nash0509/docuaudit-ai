@@ -5,7 +5,7 @@ import { loginUser, registerUser, loginGuest } from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck, Mail, Lock, ArrowRight, User } from "lucide-react";
 
-export default function Auth() {
+function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,9 +13,8 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [guestLoading, setGuestLoading] = useState(false);
   
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const setToken = useStore((state) => state.setToken);
-  const navigate = useNavigate();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -61,50 +60,45 @@ export default function Auth() {
       justifyContent: "center",
       background: "var(--bg-base)",
       position: "relative",
-      overflow: "hidden",
+      padding: "20px",
     }}>
       {/* Ambient background glows */}
       <div style={{ position: "absolute", top: "20%", left: "15%", width: "500px", height: "500px", borderRadius: "50%", background: "rgba(0, 212, 170, 0.04)", filter: "blur(100px)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", bottom: "20%", right: "15%", width: "400px", height: "400px", borderRadius: "50%", background: "rgba(37, 99, 235, 0.04)", filter: "blur(100px)", pointerEvents: "none" }} />
-
+      
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
-        style={{
-          width: "100%",
-          maxWidth: "420px",
-          padding: "0 20px",
-        }}
+        style={{ width: "100%", maxWidth: "400px" }}
       >
-        {/* Card */}
         <div style={{
           background: "rgba(15, 23, 42, 0.9)",
           backdropFilter: "blur(20px)",
-          borderRadius: "var(--radius-xl)",
+          borderRadius: "24px",
           border: "1px solid var(--border)",
-          boxShadow: "var(--shadow-lg), 0 0 60px rgba(0, 212, 170, 0.04)",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
           overflow: "hidden",
         }}>
           {/* Header */}
-          <div style={{ padding: "36px 36px 28px", borderBottom: "1px solid var(--border)", textAlign: "center", background: "rgba(255,255,255,0.01)" }}>
+          <div style={{ padding: isMobile ? "28px 24px" : "36px 36px 28px", borderBottom: "1px solid var(--border)", textAlign: "center", background: "rgba(255,255,255,0.01)" }}>
             <div style={{
-              width: "56px", height: "56px",
-              borderRadius: "16px",
+              width: isMobile ? "48px" : "56px", 
+              height: isMobile ? "48px" : "56px",
+              borderRadius: "14px",
               background: "linear-gradient(135deg, #00d4aa22, #2563eb22)",
               border: "1px solid var(--border-accent)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 20px",
+              margin: "0 auto 16px",
             }}>
-              <ShieldCheck size={26} color="var(--accent)" />
+              <ShieldCheck size={isMobile ? 22 : 26} color="var(--accent)" />
             </div>
-            <h1 style={{ fontSize: "24px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "6px", letterSpacing: "-0.02em" }}>
+            <h1 style={{ fontSize: isMobile ? "20px" : "24px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>
               DocuAudit <span style={{ color: "var(--accent)" }}>AI</span>
             </h1>
-            <p style={{ color: "var(--text-muted)", fontSize: "14px", margin: 0 }}>
+            <p style={{ color: "var(--text-muted)", fontSize: "13px", margin: 0 }}>
               {isLogin ? "Sign in to your workspace" : "Create a new account"}
             </p>
           </div>
+
 
           {/* Form */}
           <div style={{ padding: "28px 36px 32px" }}>

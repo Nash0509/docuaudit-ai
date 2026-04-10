@@ -13,10 +13,9 @@ import {
 } from "lucide-react";
 import { getDocuments, getAllAuditResult, getRules } from "../services/api";
 import Background3D from "../components/dashboard/Background3D";
+import useMediaQuery from "../utils/useMediaQuery";
 
-// ─────────────────────────────────────────
-// SECTION HEADER
-// ─────────────────────────────────────────
+// ... (SectionHeader and Panel remain similar, but Panel can adjust padding)
 function SectionHeader({ icon, label, sublabel }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
@@ -29,10 +28,7 @@ function SectionHeader({ icon, label, sublabel }) {
   );
 }
 
-// ─────────────────────────────────────────
-// GLASS PANEL
-// ─────────────────────────────────────────
-function Panel({ children, style = {}, delay = 0 }) {
+function Panel({ children, style = {}, delay = 0, isMobile }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -42,7 +38,7 @@ function Panel({ children, style = {}, delay = 0 }) {
         background: "rgba(255,255,255,0.025)",
         border: "1px solid rgba(255,255,255,0.07)",
         borderRadius: "20px",
-        padding: "24px",
+        padding: isMobile ? "20px" : "24px",
         ...style,
       }}
     >
@@ -51,12 +47,11 @@ function Panel({ children, style = {}, delay = 0 }) {
   );
 }
 
-// ─────────────────────────────────────────
-// DASHBOARD
-// ─────────────────────────────────────────
 export default function Dashboard() {
   const setTopBar = useStore(s => s.setTopBar);
   const user = useStore(s => s.user);
+  const isMobile = useMediaQuery("(max-width: 1024px)");
+  const isPhone = useMediaQuery("(max-width: 768px)");
 
   const [stats, setStats] = useState({ total: 0, audited: 0, highRisk: 0, avgRisk: 0 });
   const [riskData, setRiskData] = useState({ low: 0, medium: 0, high: 0 });
@@ -100,115 +95,95 @@ export default function Dashboard() {
       <Background3D />
       <div style={{ display: "flex", flexDirection: "column", gap: "24px", maxWidth: "1400px", position: "relative", zIndex: 1 }}>
 
-        {/* ══════════════════════════════════════════ */}
-        {/* HERO GREETING BAR                         */}
-        {/* ══════════════════════════════════════════ */}
+        {/* HERO GREETING BAR */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           style={{
             position: "relative",
-            padding: "28px 36px",
+            padding: isPhone ? "24px 28px" : "28px 36px",
             borderRadius: "20px",
             background: "linear-gradient(135deg, rgba(0,212,170,0.08) 0%, rgba(99,102,241,0.06) 60%, rgba(255,255,255,0.02) 100%)",
             border: "1px solid rgba(0,212,170,0.15)",
             overflow: "hidden",
           }}
         >
-          {/* Decorative blobs */}
-          <div style={{ position: "absolute", top: "-60px", right: "10%", width: "200px", height: "200px", background: "radial-gradient(circle, rgba(0,212,170,0.12), transparent 70%)", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", bottom: "-80px", right: "30%", width: "180px", height: "180px", background: "radial-gradient(circle, rgba(99,102,241,0.1), transparent 70%)", pointerEvents: "none" }} />
-
-          <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div>
-              <div style={{ fontSize: "13px", color: "var(--accent)", fontWeight: "600", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: "6px" }}>
-                DocuAudit AI · Command Center
+          <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", flexDirection: isPhone ? "column" : "row", gap: isPhone ? "20px" : "0" }}>
+            <div style={{ textAlign: isPhone ? "center" : "left" }}>
+              <div style={{ fontSize: "11px", color: "var(--accent)", fontWeight: "600", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: "6px" }}>
+                DocuAudit AI · Center
               </div>
-              <h1 style={{ fontSize: "26px", fontWeight: "800", color: "#fff", margin: 0, letterSpacing: "-0.03em" }}>
+              <h1 style={{ fontSize: isPhone ? "22px" : "26px", fontWeight: "800", color: "#fff", margin: 0, letterSpacing: "-0.03em" }}>
                 {greeting}, {username} 👋
               </h1>
               <p style={{ margin: "6px 0 0", fontSize: "14px", color: "var(--text-secondary)" }}>
-                You have <strong style={{ color: "var(--text-primary)" }}>{stats.highRisk}</strong> high-risk contract{stats.highRisk !== 1 ? "s" : ""} requiring attention.
+                You have <strong style={{ color: "var(--text-primary)" }}>{stats.highRisk}</strong> high-risk tasks.
               </p>
             </div>
 
-            {/* Compliance score badge */}
             <div style={{
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              width: "100px", height: "100px", borderRadius: "50%",
+              width: "90px", height: "90px", borderRadius: "50%",
               border: "2px solid rgba(0,212,170,0.3)",
               background: "rgba(0,212,170,0.06)",
-              boxShadow: "0 0 40px rgba(0,212,170,0.12)",
+              boxShadow: "0 0 30px rgba(0,212,170,0.12)",
               textAlign: "center",
+              flexShrink: 0,
             }}>
-              <div style={{ fontSize: "28px", fontWeight: "800", color: "var(--accent)", lineHeight: 1, letterSpacing: "-0.04em" }}>
+              <div style={{ fontSize: "24px", fontWeight: "800", color: "var(--accent)", lineHeight: 1 }}>
                 {complianceScore}
               </div>
-              <div style={{ fontSize: "9px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: "2px" }}>
+              <div style={{ fontSize: "8px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 Score
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* ══════════════════════════════════════════ */}
-        {/* ROW 1 — STAT CARDS                        */}
-        {/* ══════════════════════════════════════════ */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
-          <StatCard icon={<FileText size={16} />} title="Total Documents" value={stats.total} color="#00d4aa" trendLabel="All time" index={0} />
-          <StatCard icon={<ShieldCheck size={16} />} title="Audits Completed" value={stats.audited} color="#22c55e" trend={stats.audited} trendLabel="processed" index={1} />
-          <StatCard icon={<AlertTriangle size={16} />} title="High Risk" value={stats.highRisk} color="#ef4444" trendLabel="Need attention" index={2} />
-          <StatCard icon={<BarChart3 size={16} />} title="Avg Risk Score" value={stats.avgRisk > 0 ? `${stats.avgRisk}` : "—"} color="#f59e0b" trendLabel={stats.avgRisk > 0 ? "out of 100" : "No audits yet"} index={3} />
+        {/* ROW 1 — STAT CARDS */}
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: isPhone ? "1fr" : isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)", 
+          gap: "16px" 
+        }}>
+          <StatCard icon={<FileText size={16} />} title="Total Docs" value={stats.total} color="#00d4aa" index={0} />
+          <StatCard icon={<ShieldCheck size={16} />} title="Audited" value={stats.audited} color="#22c55e" index={1} />
+          <StatCard icon={<AlertTriangle size={16} />} title="High Risk" value={stats.highRisk} color="#ef4444" index={2} />
+          <StatCard icon={<BarChart3 size={16} />} title="Avg Risk" value={stats.avgRisk} color="#f59e0b" index={3} />
         </div>
 
-        {/* ══════════════════════════════════════════ */}
-        {/* ROW 2 — RISK INTELLIGENCE (3 columns)     */}
-        {/* ══════════════════════════════════════════ */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px" }}>
-
-          {/* COL 1 — Compliance Score + Distribution */}
-          <Panel delay={0.15}>
-            <SectionHeader icon={<TrendingUp size={14} />} label="Compliance Health" sublabel="Real-time posture" />
-
+        {/* ROW 2 — INTELLIGENCE */}
+        <div style={{ 
+          display: "grid", 
+          gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", 
+          gap: "20px" 
+        }}>
+          <Panel delay={0.15} isMobile={isPhone}>
+            <SectionHeader icon={<TrendingUp size={14} />} label="Compliance Health" />
             <div style={{ display: "flex", flexDirection: "column", gap: "24px", marginTop: "16px" }}>
-              {/* Massive Score Snapshot */}
-              <div style={{ 
-                textAlign: "center", padding: "32px", 
-                borderRadius: "20px", background: "rgba(255,255,255,0.015)", 
-                border: "1px solid rgba(255,255,255,0.05)",
-                boxShadow: "inset 0 0 40px rgba(255,255,255,0.01)"
-              }}>
-                <div style={{ fontSize: "64px", fontWeight: "900", color: "var(--accent)", letterSpacing: "-0.05em", lineHeight: 1 }}>
-                  {complianceScore}
-                </div>
-                <div style={{ fontSize: "11px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: "12px" }}>
-                  Compliance Score
-                </div>
+              <div style={{ textAlign: "center", padding: "32px", borderRadius: "20px", background: "rgba(255,255,255,0.015)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                <div style={{ fontSize: "52px", fontWeight: "900", color: "var(--accent)", lineHeight: 1 }}>{complianceScore}</div>
+                <div style={{ fontSize: "10px", fontWeight: "700", color: "var(--text-muted)", textTransform: "uppercase", marginTop: "10px" }}>Score</div>
               </div>
-
               <RiskPanel data={riskData} />
             </div>
           </Panel>
 
-          {/* COL 2 — AI Insights */}
-          <Panel delay={0.22}>
-            <SectionHeader icon={<Brain size={14} />} label="AI Intelligence" sublabel={`${reports.length} audits`} />
+          <Panel delay={0.22} isMobile={isPhone}>
+            <SectionHeader icon={<Brain size={14} />} label="AI Intelligence" sublabel={`${reports.length} reports`} />
             <AIInsights reports={reports} />
           </Panel>
 
-          {/* COL 3 — Quick Actions */}
-          <Panel delay={0.3}>
+          <Panel delay={0.3} isMobile={isPhone}>
             <SectionHeader icon={<Zap size={14} />} label="Quick Actions" />
             <QuickActions />
           </Panel>
         </div>
 
-        {/* ══════════════════════════════════════════ */}
-        {/* ROW 3 — ACTIVITY TIMELINE                 */}
-        {/* ══════════════════════════════════════════ */}
-        <Panel delay={0.38} style={{ paddingBottom: "8px" }}>
-          <SectionHeader icon={<Clock size={14} />} label="Recent Activity" sublabel="Last 8 events" />
+        {/* ROW 3 — ACTIVITY */}
+        <Panel delay={0.38} style={{ paddingBottom: "12px" }} isMobile={isPhone}>
+          <SectionHeader icon={<Clock size={14} />} label="Recent Activity" />
           <ActivityTimeline />
         </Panel>
 

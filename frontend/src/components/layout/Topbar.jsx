@@ -1,30 +1,24 @@
-import { useState } from "react";
-import { Search, LogOut, ChevronDown, AlertTriangle, User, Settings as SettingsIcon } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import useStore from "../../utils/Store";
-import { useNavigate } from "react-router-dom";
-import NotificationBell from "../notifications/NotificationBell";
-import DropdownMenu from "../ui/DropdownMenu";
+import { Search, LogOut, ChevronDown, AlertTriangle, User, Settings as SettingsIcon, Menu } from "lucide-react";
+import useMediaQuery from "../../utils/useMediaQuery";
 
-const topBarData = {
-  dashboard: { name: "Dashboard", description: "AI contract intelligence overview" },
-  documents: { name: "Documents", description: "Manage and audit your contracts" },
-  reports: { name: "Audit Reports", description: "View compliance analysis results" },
-  rules: { name: "Rules", description: "Manage compliance rules" },
-  settings: { name: "Settings", description: "Application configuration" },
-  profile: { name: "User Profile", description: "Manage your identity and audit intelligence" },
-};
+// ... inside Topbar component ...
 
 export default function Topbar() {
   const topBarKey = useStore((state) => state.topBar);
   const user = useStore((state) => state.user);
   const logout = useStore((state) => state.logout);
+  const toggleSidebar = useStore((state) => state.toggleSidebar);
   const navigate = useNavigate();
+  const isMobile = useMediaQuery("(max-width: 1024px)");
+
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const data = topBarData[topBarKey] || {};
   const initials = user?.email ? user.email[0].toUpperCase() : "U";
+
+  // ... (handleLogout and userMenuItems remain same)
+
 
   const handleLogout = () => {
     logout();
@@ -124,57 +118,101 @@ export default function Topbar() {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 28px",
+        padding: isMobile ? "0 16px" : "0 28px",
       }}>
-        {/* Left: Page title */}
-        <div>
-          <div style={{ fontSize: "17px", fontWeight: "700", color: "var(--text-primary)", lineHeight: 1 }}>
-            {data.name}
-          </div>
-          <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>
-            {data.description}
+        {/* Left: Hamburger + Page title */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {isMobile && (
+            <div 
+              onClick={toggleSidebar}
+              style={{
+                width: "36px",
+                height: "36px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "8px",
+                cursor: "pointer",
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <Menu size={20} color="var(--text-primary)" />
+            </div>
+          )}
+          
+          <div>
+            <div style={{ fontSize: isMobile ? "15px" : "17px", fontWeight: "700", color: "var(--text-primary)", lineHeight: 1 }}>
+              {data.name}
+            </div>
+            {!isMobile && (
+              <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>
+                {data.description}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Right: Actions */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          {/* Search — opens CommandPalette */}
-          <div
-            onClick={() => {
-              window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
-            }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              background: "var(--bg-surface)",
-              border: "1px solid var(--border)",
-              padding: "8px 12px",
-              borderRadius: "var(--radius-md)",
-              gap: "8px",
-              cursor: "pointer",
-              transition: "all 0.15s",
-              userSelect: "none",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-hover)"; e.currentTarget.style.background = "var(--bg-surface-hover)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "var(--bg-surface)"; }}
-          >
-            <Search size={14} color="var(--text-muted)" />
-            <span style={{
-              color: "var(--text-muted)",
-              fontSize: "13px",
-              fontFamily: "inherit",
-              width: "140px",
-            }}>Search...</span>
-            <span style={{
-              fontSize: "10px",
-              color: "var(--text-muted)",
-              background: "var(--bg-surface-hover)",
-              border: "1px solid var(--border)",
-              borderRadius: "4px",
-              padding: "1px 5px",
-              fontFamily: "monospace",
-            }}>⌘K</span>
-          </div>
+          {/* Search — collapses on mobile */}
+          {!isMobile ? (
+            <div
+              onClick={() => {
+                window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border)",
+                padding: "8px 12px",
+                borderRadius: "var(--radius-md)",
+                gap: "8px",
+                cursor: "pointer",
+                transition: "all 0.15s",
+                userSelect: "none",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-hover)"; e.currentTarget.style.background = "var(--bg-surface-hover)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "var(--bg-surface)"; }}
+            >
+              <Search size={14} color="var(--text-muted)" />
+              <span style={{
+                color: "var(--text-muted)",
+                fontSize: "13px",
+                fontFamily: "inherit",
+                width: "140px",
+              }}>Search...</span>
+              <span style={{
+                fontSize: "10px",
+                color: "var(--text-muted)",
+                background: "var(--bg-surface-hover)",
+                border: "1px solid var(--border)",
+                borderRadius: "4px",
+                padding: "1px 5px",
+                fontFamily: "monospace",
+              }}>⌘K</span>
+            </div>
+          ) : (
+            <div 
+              onClick={() => {
+                window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
+              }}
+              style={{
+                width: "36px",
+                height: "36px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "8px",
+                cursor: "pointer",
+                background: "var(--bg-surface)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <Search size={18} color="var(--text-muted)" />
+            </div>
+          )}
 
           {/* Notifications */}
           <NotificationBell />

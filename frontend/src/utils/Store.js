@@ -9,9 +9,12 @@ const useStore = create(
       
       token: null,
       user: null,
+      isSidebarOpen: false, // For mobile menu toggle
       setToken: (token) => set({ token }),
       setUser: (user) => set({ user }),
-      logout: () => set({ token: null, user: null })
+      setIsSidebarOpen: (value) => set({ isSidebarOpen: value }),
+      toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+      logout: () => set({ token: null, user: null, isSidebarOpen: false })
     }),
     {
       name: "auth-storage",

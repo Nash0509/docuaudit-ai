@@ -10,9 +10,12 @@ import AuditConfigModal from "../audit/AuditConfigModal";
 import Button from "../ui/Button";
 import DropdownMenu from "../ui/DropdownMenu";
 
+import useMediaQuery from "../../utils/useMediaQuery";
+
 export default function DocumentRow({ variant, doc, onAuditComplete }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [open, setOpen] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 1024px)");
   const [isHovered, setIsHovered] = useState(false);
   const [auditData, setAuditData] = useState(null);
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -136,10 +139,25 @@ export default function DocumentRow({ variant, doc, onAuditComplete }) {
             transition={{ duration: 0.2, ease: "easeOut" }}
             style={{ overflow: "hidden", background: "var(--bg-surface)" }}
           >
-            <div style={{ padding: "24px 32px", borderBottom: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: "24px" }}>
-              <div style={{ display: "flex", gap: "48px", alignItems: "center" }}>
+            <div style={{ 
+              padding: isMobile ? "20px" : "24px 32px", 
+              borderBottom: "1px solid var(--border)", 
+              display: "flex", 
+              flexDirection: "column", 
+              gap: "24px" 
+            }}>
+              <div style={{ 
+                display: "flex", 
+                gap: isMobile ? "24px" : "48px", 
+                alignItems: isMobile ? "flex-start" : "center",
+                flexDirection: isMobile ? "column" : "row" 
+              }}>
                 <RiskGauge score={auditData?.risk_score || (doc.audited ? 65 : 0)} />
-                <div style={{ display: "flex", gap: "32px" }}>
+                <div style={{ 
+                  display: "flex", 
+                  gap: isMobile ? "20px" : "32px",
+                  flexWrap: "wrap"
+                }}>
                   <InfoItem label="Sections" value={doc.chunks || "–"} />
                   <InfoItem label="Status" value={doc.audited ? "Audited" : "Pending"} />
                   <InfoItem label="Rules Checked" value={doc.audited ? "12" : "–"} />
