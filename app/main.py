@@ -36,37 +36,36 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Support frontend domain from environment variable (Vercel)
-frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
-origins = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://localhost:5175",
-    "http://localhost:3000",
-    frontend_url
-]
-
+# Support for multiple environments (Local, Vercel, etc)
+# Temporarily allowing all origins to fix deployment CORS issues
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Standard API routes (with /api prefix)
+api_router = FastAPI()
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(documents.router, prefix="/api/documents", tags=["Documents"])
 app.include_router(audit.router, prefix="/api/audit", tags=["Audit"])
-from app.routes import rules
 app.include_router(rules.router, prefix="/api/rules", tags=["Rules"])
-from app.routes import settings
 app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
-from app.routes import activity
 app.include_router(activity.router, prefix="/api/activities", tags=["Activity"])
-from app.routes import notification
 app.include_router(notification.router, prefix="/api/notifications", tags=["Notification"])
-from app.routes import billing
 app.include_router(billing.router, prefix="/api/billing", tags=["Billing"])
+
+# Fallback routes (without /api prefix) for cases where frontend config might vary
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+app.include_router(documents.router, prefix="/documents", tags=["Documents"])
+app.include_router(audit.router, prefix="/audit", tags=["Audit"])
+app.include_router(rules.router, prefix="/rules", tags=["Rules"])
+app.include_router(settings.router, prefix="/settings", tags=["Settings"])
+app.include_router(activity.router, prefix="/activities", tags=["Activity"])
+app.include_router(notification.router, prefix="/notifications", tags=["Notification"])
+app.include_router(billing.router, prefix="/billing", tags=["Billing"])
 
 @app.get("/")
 def health_check():
