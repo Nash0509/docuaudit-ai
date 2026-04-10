@@ -37,7 +37,6 @@ app = FastAPI(
 )
 
 # Support for multiple environments (Local, Vercel, etc)
-# Temporarily allowing all origins to fix deployment CORS issues
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -46,8 +45,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Standard API routes (with /api prefix)
-api_router = FastAPI()
+# Standard API routes with /api prefix
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(documents.router, prefix="/api/documents", tags=["Documents"])
 app.include_router(audit.router, prefix="/api/audit", tags=["Audit"])
@@ -56,16 +54,6 @@ app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
 app.include_router(activity.router, prefix="/api/activities", tags=["Activity"])
 app.include_router(notification.router, prefix="/api/notifications", tags=["Notification"])
 app.include_router(billing.router, prefix="/api/billing", tags=["Billing"])
-
-# Fallback routes (without /api prefix) for cases where frontend config might vary
-app.include_router(auth.router, prefix="/auth", tags=["Auth"])
-app.include_router(documents.router, prefix="/documents", tags=["Documents"])
-app.include_router(audit.router, prefix="/audit", tags=["Audit"])
-app.include_router(rules.router, prefix="/rules", tags=["Rules"])
-app.include_router(settings.router, prefix="/settings", tags=["Settings"])
-app.include_router(activity.router, prefix="/activities", tags=["Activity"])
-app.include_router(notification.router, prefix="/notifications", tags=["Notification"])
-app.include_router(billing.router, prefix="/billing", tags=["Billing"])
 
 @app.get("/")
 def health_check():

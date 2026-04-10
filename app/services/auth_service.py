@@ -20,32 +20,41 @@ class UserLogin(BaseModel):
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 def register_user(db: Session, user_data: UserCreate):
-    existing_user = db.query(User).filter(User.email == user_data.email).first()
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+    try:
+        existing_user = db.query(User).filter(User.email == user_data.email).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered"
+            )
+        
+        hashed_password = security.get_password_hash(user_data.password)
+        new_user = User(email=user_data.email, hashed_password=hashed_password)
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        
+        send_email(
+            to_email=new_user.email,
+            subject="Welcome to DocuAudit AI",
+            title="Welcome Aboard",
+            message="Your account has been created successfully. You can now start auditing documents with AI.",
+            type="SUCCESS"
         )
-    
-    hashed_password = security.get_password_hash(user_data.password)
-    new_user = User(email=user_data.email, hashed_password=hashed_password)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    
-    
-    send_email(
-        to_email=new_user.email,
-        subject="Welcome to DocuAudit AI",
-        title="Welcome Aboard",
-        message="Your account has been created successfully. You can now start auditing documents with AI.",
-        type="SUCCESS"
-    )
-    
-    return {
-        "message": "User registered successfully", 
-        "user_id": new_user.id
-    }
+        
+        return {
+            "message": "User registered successfully", 
+            "user_id": new_user.id
+        }
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Registration failed: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Registration failed: {str(e)}"
+        )
 
 def login_user(db: Session, user_data: UserLogin):
     user = db.query(User).filter(User.email == user_data.email).first()

@@ -18,7 +18,23 @@ const topBarData = {
 };
 
 export default function Topbar() {
+  const navigate = useNavigate();
+  const { user, logout } = useStore();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  
+  // Dynamic page title based on path
+  const path = window.location.pathname.split("/").pop() || "dashboard";
+  const data = topBarData[path] || { name: "Dashboard", description: "Audit overview and key performance metrics" };
 
+  const toggleSidebar = () => {
+    // This assumes Sidebar uses the same store or a parent state
+    // For now, we'll dispatch a custom event that Sidebar can listen to
+    window.dispatchEvent(new CustomEvent('toggle-sidebar'));
+  };
+
+  const initials = user?.email ? user.email.substring(0, 2).toUpperCase() : "AD";
 
   const handleLogout = () => {
     logout();
