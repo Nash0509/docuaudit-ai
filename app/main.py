@@ -1,19 +1,40 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import documents, audit, auth, rules, settings
-from app.core.database import create_tables
-
-create_tables()
-
-# Seed default rules
-from app.core.database import SessionLocal
+from contextlib import asynccontextmanager
+from app.routes import documents, audit, auth, rules, settings, activity, notification, billing
+from app.core.database import create_tables, SessionLocal
 from app.services.rule_service import seed_default_rules
-with SessionLocal() as db:
-    seed_default_rules(db)
-
 import os
 
-app = FastAPI(title="DocuAudit AI", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Initialize Database
+    print("🚀 DocuAudit AI: Starting up...")
+    try:
+        # Check for DB URL
+        db_url = os.getenv("DATABASE_URL")
+        if not db_url:
+            print("⚠️ WARNING: DATABASE_URL not set. Falling back to SQLite.")
+            print("To use PostgreSQL on Render, add the DATABASE_URL environment variable.")
+        
+        print("🛠️ Running migrations and seeding default rules...")
+        create_tables()
+        with SessionLocal() as db:
+            seed_default_rules(db)
+        print("✅ Database initialized successfully.")
+    except Exception as e:
+        print(f"❌ ERROR: Database initialization failed: {str(e)}")
+        # We don't raise here so the app can still boot and serve a health check or 503
+    
+    yield
+    # Shutdown logic (if any)
+    print("👋 DocuAudit AI: Shutting down...")
+
+app = FastAPI(
+    title="DocuAudit AI", 
+    version="1.0.0",
+    lifespan=lifespan
+)
 
 # Support frontend domain from environment variable (Vercel)
 frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")

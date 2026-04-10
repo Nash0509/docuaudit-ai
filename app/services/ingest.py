@@ -1,11 +1,8 @@
 from pypdf import PdfReader
-from sentence_transformers import SentenceTransformer
-from app.core.config import EMBEDDING_MODEL
+from app.services.embedding_service import embedding_service
 from app.services.vector_service import vector_service
 from app.core.logger import logger
 import os
-
-embedding_model = SentenceTransformer(EMBEDDING_MODEL)
 
 def load_pdf(path: str) -> str:
     reader = PdfReader(path)
@@ -23,14 +20,13 @@ def split_into_chunks(text: str, chunk_size=500, overlap=50) -> list:
         start = end - overlap
     return chunks
 
-def get_embedding(text: str) -> list:
-    return embedding_model.encode(text).tolist()
-
 def ingest_document(file_path: str, doc_id: str) -> int:
     logger.info(f"Ingesting document {doc_id}")
     raw_text = load_pdf(file_path)
     chunks = split_into_chunks(raw_text)
-    embeddings = [get_embedding(chunk) for chunk in chunks]
+    
+    # Use the consolidated embedding service for batch processing
+    embeddings = embedding_service.embed_batch(chunks)
 
     # Use the consolidated vector service
     vector_service.store_chunks(doc_id, chunks, embeddings)
