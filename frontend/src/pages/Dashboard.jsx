@@ -15,7 +15,7 @@ import { getDocuments, getAllAuditResult, getRules } from "../services/api";
 import Background3D from "../components/dashboard/Background3D";
 import useMediaQuery from "../utils/useMediaQuery";
 
-// ... (SectionHeader and Panel remain similar, but Panel can adjust padding)
+
 function SectionHeader({ icon, label, sublabel }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>

@@ -1,3 +1,5 @@
+import useMediaQuery from "../../utils/useMediaQuery";
+
 import {
   LayoutDashboard, FileText, ShieldCheck,
   BarChart2, Settings, User, Zap
@@ -84,9 +86,7 @@ function NavItem({ item, active, onClick }) {
   );
 }
 
-import useMediaQuery from "../../utils/useMediaQuery";
 
-// ... inside Sidebar component ...
 
 export default function Sidebar() {
   const navigate = useNavigate();
@@ -159,7 +159,6 @@ export default function Sidebar() {
           />
         ))}
       </div>
-      {/* ... rest of content handled in full code below ... */}
     </>
   );
 
@@ -185,8 +184,6 @@ export default function Sidebar() {
       }}
     >
       {sidebarContent}
-      {/* ... bottom items moved into sidebarContent for clarity ... */}
-
 
       {/* Bottom Upgrade / Status block */}
       <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -295,6 +292,6 @@ export default function Sidebar() {
           <div style={{ fontSize: "10px", color: "var(--text-muted)", fontFamily: "monospace" }}>v1.0.3 · Stable</div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

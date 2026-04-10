@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import useMediaQuery from "../utils/useMediaQuery";
 import useStore from "../utils/Store";
 import { loginUser, registerUser, loginGuest } from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,6 +15,7 @@ function Auth() {
   const [guestLoading, setGuestLoading] = useState(false);
   
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const navigate = useNavigate();
   const setToken = useStore((state) => state.setToken);
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -299,3 +301,5 @@ function Auth() {
     </div>
   );
 }
+
+export default Auth;

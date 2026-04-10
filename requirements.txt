@@ -25,7 +25,9 @@ bcrypt
 stripe
 requests
 
+# Build Tools
+wheel
+setuptools
+
 # Stable Version Pins to avoid conflict
-grpcio==1.66.1
-grpcio-status==1.66.1
-google-api-core
+# (Manual pins removed to resolve Render build errors)

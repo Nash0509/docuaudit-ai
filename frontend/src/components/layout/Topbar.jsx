@@ -1,23 +1,23 @@
-import { Search, LogOut, ChevronDown, AlertTriangle, User, Settings as SettingsIcon, Menu } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import useStore from "../../utils/Store";
 import useMediaQuery from "../../utils/useMediaQuery";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, LogOut, ChevronDown, AlertTriangle, User, Settings as SettingsIcon, Menu } from "lucide-react";
+import NotificationBell from "../notifications/NotificationBell";
+import DropdownMenu from "../ui/DropdownMenu";
 
-// ... inside Topbar component ...
+const topBarData = {
+  dashboard: { name: "Dashboard", description: "Audit overview and key performance metrics" },
+  documents: { name: "Documents", description: "Secure storage and processing for your legal files" },
+  reports: { name: "Audit Reports", description: "Deep-dive analysis and compliance findings" },
+  rules: { name: "Compliance Rules", description: "Criteria and logic used for document evaluation" },
+  settings: { name: "Settings", description: "Manage your system and personal preferences" },
+  profile: { name: "Account Profile", description: "Manage your identity and authentication" },
+  pricing: { name: "Premium Plans", description: "Scale your auditing with high-performance features" },
+};
 
 export default function Topbar() {
-  const topBarKey = useStore((state) => state.topBar);
-  const user = useStore((state) => state.user);
-  const logout = useStore((state) => state.logout);
-  const toggleSidebar = useStore((state) => state.toggleSidebar);
-  const navigate = useNavigate();
-  const isMobile = useMediaQuery("(max-width: 1024px)");
-
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-
-  const data = topBarData[topBarKey] || {};
-  const initials = user?.email ? user.email[0].toUpperCase() : "U";
-
-  // ... (handleLogout and userMenuItems remain same)
 
 
   const handleLogout = () => {
