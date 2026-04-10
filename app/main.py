@@ -33,7 +33,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="DocuAudit AI", 
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    redirect_slashes=False
 )
 
 # Support for multiple environments (Local, Vercel, etc)
@@ -54,6 +55,16 @@ app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
 app.include_router(activity.router, prefix="/api/activities", tags=["Activity"])
 app.include_router(notification.router, prefix="/api/notifications", tags=["Notification"])
 app.include_router(billing.router, prefix="/api/billing", tags=["Billing"])
+
+# Fallback routes without /api prefix for maximum compatibility
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
+app.include_router(documents.router, prefix="/documents", tags=["Documents"])
+app.include_router(audit.router, prefix="/audit", tags=["Audit"])
+app.include_router(rules.router, prefix="/rules", tags=["Rules"])
+app.include_router(settings.router, prefix="/settings", tags=["Settings"])
+app.include_router(activity.router, prefix="/activities", tags=["Activity"])
+app.include_router(notification.router, prefix="/notifications", tags=["Notification"])
+app.include_router(billing.router, prefix="/billing", tags=["Billing"])
 
 @app.get("/")
 def health_check():
