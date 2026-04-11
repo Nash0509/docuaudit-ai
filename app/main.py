@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+import traceback
 from app.routes import documents, audit, auth, rules, settings, activity, notification, billing
 from app.core.database import create_tables, SessionLocal
 from app.services.rule_service import seed_default_rules
@@ -65,6 +67,23 @@ app.include_router(settings.router, prefix="/settings", tags=["Settings"])
 app.include_router(activity.router, prefix="/activities", tags=["Activity"])
 app.include_router(notification.router, prefix="/notifications", tags=["Notification"])
 app.include_router(billing.router, prefix="/billing", tags=["Billing"])
+
+# --- GLOBAL DIAGNOSTICS ---
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Catch-all for 500 errors to show the REAL error in production."""
+    err_trace = traceback.format_exc()
+    print(f"🔥 FATAL ERROR: {str(exc)}\n{err_trace}")
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Internal Server Error",
+            "error_message": str(exc),
+            "error_type": type(exc).__name__,
+            "recommendation": "Check Render logs for the full stack trace."
+        }
+    )
 
 @app.get("/")
 def health_check():
