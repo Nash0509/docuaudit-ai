@@ -13,17 +13,10 @@ export default function Layout({ children }) {
   const setIsSidebarOpen = useStore((state) => state.setIsSidebarOpen);
 
   return (
-    <div style={{
-      display: "flex",
-      minHeight: "100vh",
-      background: "var(--bg-base)",
-      color: "var(--text-primary)",
-      position: "relative",
-    }}>
-      {/* Global Modals & Utilities */}
+    <div className="flex min-h-screen bg-slate-50">
       <CommandPalette />
 
-      {/* Mobile Sidebar Backdrop */}
+      {/* Mobile Backdrop */}
       <AnimatePresence>
         {isMobile && isSidebarOpen && (
           <motion.div
@@ -31,41 +24,23 @@ export default function Layout({ children }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsSidebarOpen(false)}
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0,0,0,0.5)",
-              backdropFilter: "blur(4px)",
-              zIndex: 45,
-            }}
+            className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-[45]"
           />
         )}
       </AnimatePresence>
 
       <Sidebar />
 
-      <div style={{ 
-        flex: 1, 
-        display: "flex", 
-        flexDirection: "column", 
-        overflow: "hidden", 
-        minWidth: 0,
-      }}>
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <Topbar />
-
         <AnimatePresence mode="wait">
           <motion.main
             key={location.pathname}
-            initial={{ opacity: 0, y: 5 }}
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 5 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            style={{
-              flex: 1,
-              padding: isMobile ? "16px 20px" : "24px 32px",
-              overflowY: "auto",
-              overflowX: "hidden",
-            }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? "p-5" : "p-8"}`}
           >
             {children}
           </motion.main>

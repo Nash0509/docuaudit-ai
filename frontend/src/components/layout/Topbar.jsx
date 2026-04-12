@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useStore from "../../utils/Store";
 import useMediaQuery from "../../utils/useMediaQuery";
@@ -23,219 +23,89 @@ export default function Topbar() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
-  
-  // Dynamic page title based on path
+
   const path = window.location.pathname.split("/").pop() || "dashboard";
-  const data = topBarData[path] || { name: "Dashboard", description: "Audit overview and key performance metrics" };
+  const data = topBarData[path] || topBarData.dashboard;
 
-  const toggleSidebar = () => {
-    // This assumes Sidebar uses the same store or a parent state
-    // For now, we'll dispatch a custom event that Sidebar can listen to
-    window.dispatchEvent(new CustomEvent('toggle-sidebar'));
-  };
-
+  const toggleSidebar = () => window.dispatchEvent(new CustomEvent("toggle-sidebar"));
   const initials = user?.email ? user.email.substring(0, 2).toUpperCase() : "AD";
-
-  const handleLogout = () => {
-    logout();
-    navigate("/auth");
-  };
+  const handleLogout = () => { logout(); navigate("/auth"); };
 
   const userMenuItems = [
-    { 
-      label: 'Profile', 
-      icon: <User size={14} />, 
-      onClick: () => navigate('/profile')
-    },
-    { 
-      label: 'Settings', 
-      icon: <SettingsIcon size={14} />, 
-      shortcut: '⌘S',
-      onClick: () => navigate('/settings') 
-    },
-    { type: 'divider' },
-    { 
-      label: 'Sign out', 
-      icon: <LogOut size={14} />, 
-      danger: true,
-      onClick: () => setShowLogoutConfirm(true) 
-    },
+    { label: "Profile", icon: <User size={14} />, onClick: () => navigate("/profile") },
+    { label: "Settings", icon: <SettingsIcon size={14} />, shortcut: "⌘S", onClick: () => navigate("/settings") },
+    { type: "divider" },
+    { label: "Sign out", icon: <LogOut size={14} />, danger: true, onClick: () => setShowLogoutConfirm(true) },
   ];
 
   const userTrigger = (
-    <div style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-      background: userMenuOpen ? "var(--bg-surface-hover)" : "var(--bg-surface)",
-      border: `1px solid ${userMenuOpen ? 'rgba(255, 255, 255, 0.2)' : 'var(--border)'}`,
-      padding: "6px 12px 6px 6px",
-      borderRadius: "12px",
-      cursor: "pointer",
-      transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-      boxShadow: userMenuOpen ? '0 4px 20px rgba(0, 0, 0, 0.2)' : 'none',
-    }}
-      onMouseEnter={(e) => { 
-        if (!userMenuOpen) {
-          e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.15)"; 
-          e.currentTarget.style.background = "var(--bg-surface-hover)";
-        }
-      }}
-      onMouseLeave={(e) => { 
-        if (!userMenuOpen) {
-          e.currentTarget.style.borderColor = "var(--border)"; 
-          e.currentTarget.style.background = "var(--bg-surface)";
-        }
-      }}
-    >
-      <div style={{
-        width: "28px",
-        height: "28px",
-        borderRadius: "50%",
-        background: "linear-gradient(135deg, #00d4aa, #2563eb)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: "12px",
-        fontWeight: "800",
-        color: "#020617",
-        flexShrink: 0,
-        boxShadow: userMenuOpen ? '0 0 12px rgba(0, 212, 170, 0.4)' : 'none',
-        transition: 'all 0.2s ease',
-      }}>
+    <div className={`
+      flex items-center gap-2.5 px-3 py-1.5 rounded-lg border cursor-pointer transition-all
+      ${userMenuOpen ? "bg-slate-100 border-slate-300" : "bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300"}
+    `}>
+      <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
         {initials}
       </div>
-      <span style={{ fontSize: "13px", color: userMenuOpen ? "var(--text-primary)" : "var(--text-secondary)", fontWeight: "600", transition: 'color 0.2s' }}>
-        {user?.email?.split("@")[0] || "User"}
-      </span>
-      <ChevronDown 
-        size={14} 
-        color={userMenuOpen ? "var(--text-primary)" : "var(--text-muted)"} 
-        style={{ 
-            transform: userMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            opacity: userMenuOpen ? 1 : 0.6
-        }} 
+      <span className="text-sm font-medium text-slate-700">{user?.email?.split("@")[0] || "User"}</span>
+      <ChevronDown
+        size={14}
+        className="text-slate-400"
+        style={{ transform: userMenuOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}
       />
     </div>
   );
 
   return (
     <>
-      <div style={{
-        height: "64px",
-        position: "sticky",
-        top: 0,
-        zIndex: 20,
-        background: "rgba(2, 6, 23, 0.85)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderBottom: "1px solid var(--border)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: isMobile ? "0 16px" : "0 28px",
-      }}>
+      <div className={`
+        h-16 sticky top-0 z-20 bg-white border-b border-slate-200
+        flex items-center justify-between
+        ${isMobile ? "px-4" : "px-7"}
+      `}>
         {/* Left: Hamburger + Page title */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div className="flex items-center gap-3">
           {isMobile && (
-            <div 
+            <button
               onClick={toggleSidebar}
-              style={{
-                width: "36px",
-                height: "36px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "8px",
-                cursor: "pointer",
-                background: "var(--bg-surface)",
-                border: "1px solid var(--border)",
-              }}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors"
             >
-              <Menu size={20} color="var(--text-primary)" />
-            </div>
+              <Menu size={18} className="text-slate-600" />
+            </button>
           )}
-          
           <div>
-            <div style={{ fontSize: isMobile ? "15px" : "17px", fontWeight: "700", color: "var(--text-primary)", lineHeight: 1 }}>
+            <div className={`font-semibold text-slate-900 leading-tight ${isMobile ? "text-[15px]" : "text-[16px]"}`}>
               {data.name}
             </div>
             {!isMobile && (
-              <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>
-                {data.description}
-              </div>
+              <div className="text-[12px] text-slate-400 mt-0.5">{data.description}</div>
             )}
           </div>
         </div>
 
         {/* Right: Actions */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          {/* Search — collapses on mobile */}
+        <div className="flex items-center gap-2.5">
           {!isMobile ? (
             <div
-              onClick={() => {
-                window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
-              }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                background: "var(--bg-surface)",
-                border: "1px solid var(--border)",
-                padding: "8px 12px",
-                borderRadius: "var(--radius-md)",
-                gap: "8px",
-                cursor: "pointer",
-                transition: "all 0.15s",
-                userSelect: "none",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-hover)"; e.currentTarget.style.background = "var(--bg-surface-hover)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "var(--bg-surface)"; }}
+              onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }))}
+              className="flex items-center gap-2 bg-slate-50 border border-slate-200 hover:border-slate-300 px-3 py-2 rounded-lg cursor-pointer transition-all"
             >
-              <Search size={14} color="var(--text-muted)" />
-              <span style={{
-                color: "var(--text-muted)",
-                fontSize: "13px",
-                fontFamily: "inherit",
-                width: "140px",
-              }}>Search...</span>
-              <span style={{
-                fontSize: "10px",
-                color: "var(--text-muted)",
-                background: "var(--bg-surface-hover)",
-                border: "1px solid var(--border)",
-                borderRadius: "4px",
-                padding: "1px 5px",
-                fontFamily: "monospace",
-              }}>⌘K</span>
+              <Search size={14} className="text-slate-400" />
+              <span className="text-sm text-slate-400" style={{ width: "140px" }}>Search...</span>
+              <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded border border-slate-200 bg-white text-slate-400">⌘K</kbd>
             </div>
           ) : (
-            <div 
-              onClick={() => {
-                window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true }));
-              }}
-              style={{
-                width: "36px",
-                height: "36px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "8px",
-                cursor: "pointer",
-                background: "var(--bg-surface)",
-                border: "1px solid var(--border)",
-              }}
+            <button
+              onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }))}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors"
             >
-              <Search size={18} color="var(--text-muted)" />
-            </div>
+              <Search size={16} className="text-slate-500" />
+            </button>
           )}
 
-          {/* Notifications */}
           <NotificationBell />
 
-          {/* User Menu Dropdown */}
-          <DropdownMenu 
-            items={userMenuItems} 
+          <DropdownMenu
+            items={userMenuItems}
             trigger={userTrigger}
             align="right"
             onOpenChange={(open) => setUserMenuOpen(open)}
@@ -243,107 +113,44 @@ export default function Topbar() {
         </div>
       </div>
 
-      {/* Logout Confirmation Modal */}
+      {/* Logout Confirm Modal */}
       <AnimatePresence>
         {showLogoutConfirm && (
           <>
-            {/* Backdrop */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setShowLogoutConfirm(false)}
-              style={{
-                position: "fixed", inset: 0,
-                background: "rgba(0, 0, 0, 0.6)",
-                backdropFilter: "blur(4px)",
-                zIndex: 9998,
-              }}
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[9998]"
             />
-            {/* Modal */}
-            <div style={{
-              position: "fixed", inset: 0,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              zIndex: 9999, pointerEvents: "none",
-            }}>
+            <div className="fixed inset-0 flex items-center justify-center z-[9999] pointer-events-none">
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                initial={{ opacity: 0, scale: 0.95, y: 8 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                style={{
-                  width: "380px",
-                  background: "rgba(15, 23, 42, 0.98)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "16px",
-                  boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03)",
-                  overflow: "hidden",
-                  pointerEvents: "auto",
-                }}
+                exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                className="w-80 bg-white border border-slate-200 rounded-2xl shadow-xl pointer-events-auto overflow-hidden"
               >
-                {/* Header icon */}
-                <div style={{ padding: "28px 28px 0", display: "flex", justifyContent: "center" }}>
-                  <div style={{
-                    width: "48px", height: "48px", borderRadius: "50%",
-                    background: "rgba(239, 68, 68, 0.1)",
-                    border: "1px solid rgba(239, 68, 68, 0.2)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "var(--danger)",
-                  }}>
-                    <AlertTriangle size={22} />
+                <div className="p-7 pb-5 text-center">
+                  <div className="w-12 h-12 rounded-full bg-red-50 border border-red-100 flex items-center justify-center mx-auto mb-4">
+                    <AlertTriangle size={22} className="text-red-500" />
                   </div>
-                </div>
-
-                {/* Content */}
-                <div style={{ padding: "20px 28px 8px", textAlign: "center" }}>
-                  <h3 style={{ margin: 0, fontSize: "16px", fontWeight: "600", color: "var(--text-primary)" }}>
-                    Sign out of DocuAudit AI?
-                  </h3>
-                  <p style={{ margin: "8px 0 0", fontSize: "13px", color: "var(--text-secondary)", lineHeight: "1.5" }}>
-                    You'll need to sign back in to access your documents, rules, and audit reports.
+                  <h3 className="text-base font-semibold text-slate-900">Sign out of DocuAudit AI?</h3>
+                  <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+                    You'll need to sign back in to access your documents and audit reports.
                   </p>
                 </div>
-
-                {/* Actions */}
-                <div style={{ padding: "20px 28px 24px", display: "flex", gap: "10px" }}>
+                <div className="flex gap-2.5 px-7 pb-6">
                   <button
                     onClick={() => setShowLogoutConfirm(false)}
-                    style={{
-                      flex: 1,
-                      padding: "10px 16px",
-                      borderRadius: "8px",
-                      background: "var(--bg-surface)",
-                      border: "1px solid var(--border)",
-                      color: "var(--text-primary)",
-                      fontSize: "13px",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      transition: "all 0.15s",
-                      fontFamily: "inherit",
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-surface-hover)"; e.currentTarget.style.borderColor = "var(--border-hover)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "var(--bg-surface)"; e.currentTarget.style.borderColor = "var(--border)"; }}
+                    className="flex-1 py-2.5 px-4 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                    style={{ fontFamily: "inherit" }}
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleLogout}
-                    style={{
-                      flex: 1,
-                      padding: "10px 16px",
-                      borderRadius: "8px",
-                      background: "var(--danger)",
-                      border: "1px solid transparent",
-                      color: "#fff",
-                      fontSize: "13px",
-                      fontWeight: "600",
-                      cursor: "pointer",
-                      transition: "all 0.15s",
-                      fontFamily: "inherit",
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+                    className="flex-1 py-2.5 px-4 rounded-lg bg-red-500 hover:bg-red-600 text-sm font-medium text-white transition-colors"
+                    style={{ fontFamily: "inherit" }}
                   >
                     Sign Out
                   </button>
