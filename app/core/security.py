@@ -7,17 +7,20 @@ SECRET_KEY = "your-secure-secret-key-replace-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 24 * 60
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def _truncate_password(password: str) -> str:
-    # bcrypt restricts passwords to 72 bytes. Manual truncation prevents app crashes.
-    return password.encode('utf-8')[:72].decode('utf-8', 'ignore')
+import bcrypt
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(_truncate_password(plain_password), hashed_password)
+    # Truncate to 72 bytes manually to prevent bcrypt ValueError
+    pwd_bytes = plain_password.encode('utf-8')[:72]
+    hash_bytes = hashed_password.encode('ascii') if isinstance(hashed_password, str) else hashed_password
+    return bcrypt.checkpw(pwd_bytes, hash_bytes)
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(_truncate_password(password))
+    # Truncate to 72 bytes manually
+    pwd_bytes = password.encode('utf-8')[:72]
+    salt = bcrypt.gensalt()
+    hashed_pwd = bcrypt.hashpw(pwd_bytes, salt)
+    return hashed_pwd.decode('ascii')
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
