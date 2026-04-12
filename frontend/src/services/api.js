@@ -54,11 +54,7 @@ export const getDocuments = async () => {
 export const uploadDocument = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
-  const res = await API.post("/documents/upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  const res = await API.post("/documents/upload", formData);
   return res.data;
 };
 
