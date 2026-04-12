@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, BellOff, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import useStore from '../../utils/Store';
 import NotificationItem from './NotificationItem';
 import NotificationSkeleton from './NotificationSkeleton';
+import axios from 'axios';
 
-const API = axios.create({ baseURL: "http://localhost:8000/api" });
+// Use the same base URL as the shared API service
+const API = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
+});
 
 export default function NotificationPanel({ onClose, onCountChange, onRefetchCount }) {
   const [notifications, setNotifications] = useState([]);

@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
@@ -8,6 +9,8 @@ from app.models.user import User
 from app.core import security
 from app.core.database import get_db
 from app.services.email_service import send_email
+
+logger = logging.getLogger(__name__)
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -83,23 +86,31 @@ def login_user(db: Session, user_data: UserLogin):
 import secrets
 
 def login_guest(db: Session):
-    guest_email = "guest@docuaudit.ai"
-    user = db.query(User).filter(User.email == guest_email).first()
-    
-    if not user:
-        # Create guest user if it doesn't exist
-        random_password = secrets.token_urlsafe(16)
-        hashed_password = security.get_password_hash(random_password)
-        user = User(email=guest_email, hashed_password=hashed_password)
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+    try:
+        guest_email = "guest@docuaudit.ai"
+        user = db.query(User).filter(User.email == guest_email).first()
+        
+        if not user:
+            # Create guest user if it doesn't exist
+            random_password = secrets.token_urlsafe(16)
+            hashed_password = security.get_password_hash(random_password)
+            user = User(email=guest_email, hashed_password=hashed_password)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
 
-    access_token = security.create_access_token(data={"sub": str(user.id)})
-    return {
-        "access_token": access_token, 
-        "token_type": "bearer"
-    }
+        access_token = security.create_access_token(data={"sub": str(user.id)})
+        return {
+            "access_token": access_token, 
+            "token_type": "bearer"
+        }
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Guest login failed: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Guest login failed: {str(e)}"
+        )
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
