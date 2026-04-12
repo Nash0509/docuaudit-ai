@@ -1331,3 +1331,4 @@
 2026-04-12 16:24:18,075 | WARNING | docuaudit | No cloud database detected. Vector search is disabled or running in local mock mode.
 2026-04-12 16:25:05,065 | WARNING | docuaudit | No cloud database detected. Vector search is disabled or running in local mock mode.
 2026-04-12 16:44:33,870 | WARNING | docuaudit | No cloud database detected. Vector search is disabled or running in local mock mode.
+2026-04-12 16:57:04,012 | WARNING | docuaudit | No cloud database detected. Vector search is disabled or running in local mock mode.
