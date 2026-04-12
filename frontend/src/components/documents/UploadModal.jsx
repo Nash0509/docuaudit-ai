@@ -55,9 +55,16 @@ export default function UploadModal({ isOpen, file, onClose, onSuccess }) {
       } catch (err) {
         if (!isMounted) return;
         clearInterval(logInterval);
-        setLogs(prev => [...prev, "> FATAL: Upload pipeline compromised or rejected."]);
-        setStatus("error");
-        setErrorMsg("Failed to upload document. Please ensure it is a valid PDF.");
+        
+        if (err.response?.status === 402) {
+          setLogs(prev => [...prev, "> ERROR: Trial limit reached. Upgrade to Pro."]);
+          setStatus("error");
+          setErrorMsg("You have reached your free tier limit. Please upgrade your account to continue uploading documents.");
+        } else {
+          setLogs(prev => [...prev, "> FATAL: Upload pipeline compromised or rejected."]);
+          setStatus("error");
+          setErrorMsg("Failed to upload document. Please ensure it is a valid PDF.");
+        }
       }
     };
 

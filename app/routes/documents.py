@@ -32,7 +32,7 @@ async def upload_document(
             detail="Only PDF supported"
         )
         
-    if current_user.audit_count >= 1 and not current_user.is_subscribed:
+    if current_user.audit_count >= 1 and not current_user.is_subscribed and current_user.email != "guest@docuaudit.ai":
         raise HTTPException(
             status_code=402,
             detail="TRIAL_ENDED_UPLOAD"

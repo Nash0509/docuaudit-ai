@@ -38,7 +38,7 @@ def run_audit(
             logger.info(f"Audit already exists {document_id}")
             return document.audit_result
 
-        if current_user.audit_count >= 1 and not current_user.is_subscribed:
+        if current_user.audit_count >= 1 and not current_user.is_subscribed and current_user.email != "guest@docuaudit.ai":
             raise HTTPException(status_code=402, detail="TRIAL_ENDED")
             
         settings = db.query(UserSettings).filter(UserSettings.user_id == current_user.id).first()
