@@ -1,8 +1,8 @@
-import { useEffect, useState, useRef } from "react";
-import { getDocuments, uploadDocument } from "../../services/api";
+import { useEffect, useState } from "react";
+import { getDocuments } from "../../services/api";
 import DocumentRow from "./DocumentRow";
 import EmptyState from "../ui/EmptyState";
-import { FileText, RefreshCw, Upload, Loader2 } from "lucide-react";
+import { FileText, RefreshCw } from "lucide-react";
 
 function SkeletonRow() {
   return (
@@ -21,11 +21,9 @@ function SkeletonRow() {
   );
 }
 
-export default function DocumentTable({ variant, refresh }) {
+export default function DocumentTable({ variant, refresh, onUploadAction }) {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef(null);
 
   useEffect(() => { loadDocuments(); }, [refresh]);
 
@@ -42,27 +40,6 @@ export default function DocumentTable({ variant, refresh }) {
       setLoading(false);
     }
   }
-
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    setUploading(true);
-    try {
-      await uploadDocument(file);
-      refreshTable();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to upload document. Make sure it's a valid PDF.");
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
 
   return (
     <div style={{
@@ -105,52 +82,8 @@ export default function DocumentTable({ variant, refresh }) {
           >
             <RefreshCw size={13} /> Refresh
           </button>
-
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileChange} 
-            accept=".pdf" 
-            style={{ display: "none" }} 
-          />
-          <button
-            onClick={handleUploadClick}
-            disabled={uploading}
-            style={{
-              background: "var(--accent)",
-              color: "#020617",
-              border: "none",
-              padding: "8px 16px",
-              borderRadius: "8px",
-              fontSize: "13px",
-              fontWeight: "700",
-              cursor: uploading ? "not-allowed" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              transition: "transform 0.1s ease, opacity 0.2s",
-              opacity: uploading ? 0.7 : 1,
-              boxShadow: "0 4px 12px rgba(0, 212, 170, 0.2)"
-            }}
-            onMouseDown={(e) => { if(!uploading) e.currentTarget.style.transform = "scale(0.96)"; }}
-            onMouseUp={(e) => { if(!uploading) e.currentTarget.style.transform = "scale(1)"; }}
-            onMouseLeave={(e) => { if(!uploading) e.currentTarget.style.transform = "scale(1)"; }}
-          >
-            {uploading ? (
-              <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />
-            ) : (
-              <Upload size={14} />
-            )}
-            {uploading ? "Uploading..." : "Upload PDF"}
-          </button>
         </div>
       </div>
-
-      <style>{`
-        @keyframes spin {
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
 
       {/* Scrollable Container */}
       <div style={{ overflowX: "auto", minWidth: "100%" }}>
@@ -182,7 +115,7 @@ export default function DocumentTable({ variant, refresh }) {
               title="No documents yet"
               description="Upload your first contract to start AI compliance analysis"
               actionText="Upload Contract"
-              onAction={handleUploadClick}
+              onAction={onUploadAction || (() => {})}
             />
           ) : (
             documents.map((doc) => (
