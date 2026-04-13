@@ -1,66 +1,57 @@
 import { Edit, Trash2, Tag, Layers, Lock, MoreVertical } from "lucide-react";
-import Badge from "../ui/Badge";
-import Card from "../ui/Card";
 import DropdownMenu from "../ui/DropdownMenu";
-import { useState } from "react";
+
+const SEVERITY_CFG = {
+  HIGH: "bg-red-50 text-red-700 border-red-200",
+  MEDIUM: "bg-amber-50 text-amber-700 border-amber-200",
+  LOW: "bg-slate-100 text-slate-600 border-slate-200",
+};
 
 export default function RuleCard({ rule, onEdit, onDelete, isSystem }) {
-  const [isHovered, setIsHovered] = useState(false);
   const isTemplate = rule.is_template;
-
   const actions = [
     { label: "Edit Rule", icon: <Edit size={14} />, onClick: () => onEdit(rule) },
     { type: "divider" },
-    { label: "Delete Rule", icon: <Trash2 size={14} />, danger: true, onClick: () => onDelete(rule.id) }
+    { label: "Delete Rule", icon: <Trash2 size={14} />, danger: true, onClick: () => onDelete(rule.id) },
   ];
 
   return (
-    <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <Card hover={true} style={{ display: "flex", flexDirection: "column", padding: "20px", height: "100%" }}>
-        {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", marginBottom: "12px" }}>
-          <h3 style={{ fontSize: "15px", fontWeight: "600", color: "var(--text-primary)", margin: 0, lineHeight: 1.4 }}>
-            {rule.name}
-          </h3>
-          
-          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <Badge text={rule.severity || "LOW"} />
-            {!isTemplate && (
-              <div style={{ opacity: isHovered ? 1 : 0, transition: "opacity var(--ease-out)" }}>
-                <DropdownMenu items={actions} />
-              </div>
-            )}
-          </div>
-        </div>
-
-        <p style={{ color: "var(--text-secondary)", fontSize: "13.5px", lineHeight: "1.6", margin: 0, flexGrow: 1, marginBottom: "20px" }}>
-          {rule.description}
-        </p>
-
-        {/* Footer Tags */}
-        <div style={{ display: "flex", gap: "12px", borderTop: "1px solid var(--border)", paddingTop: "14px", marginTop: "auto", alignItems: "center" }}>
-          {isTemplate && (
-            <div style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "10px", fontWeight: "600", color: "var(--text-muted)", background: "var(--bg-surface-hover)", padding: "2px 6px", borderRadius: "4px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              <Lock size={10} /> System Template
-            </div>
-          )}
-
-          {rule.category && (
-            <div style={{ display: "flex", alignItems: "center", gap: "4px", color: "var(--text-muted)", fontSize: "11px", fontWeight: "500" }}>
-              <Tag size={12} /> {rule.category}
-            </div>
-          )}
-          
-          {rule.industry && (
-            <div style={{ display: "flex", alignItems: "center", gap: "4px", color: "var(--text-muted)", fontSize: "11px", fontWeight: "500" }}>
-              <Layers size={12} /> {rule.industry}
+    <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col h-full hover:border-slate-300 hover:shadow-sm transition-all duration-200 group">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <h3 className="text-sm font-semibold text-slate-800 leading-snug flex-1">{rule.name}</h3>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold border ${SEVERITY_CFG[rule.severity] || SEVERITY_CFG.LOW}`}>
+            {rule.severity || "LOW"}
+          </span>
+          {!isTemplate && (
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <DropdownMenu items={actions} />
             </div>
           )}
         </div>
-      </Card>
+      </div>
+
+      <p className="text-sm text-slate-500 leading-relaxed flex-1 mb-4">{rule.description}</p>
+
+      {/* Footer Tags */}
+      <div className="flex items-center gap-3 flex-wrap pt-3 border-t border-slate-100">
+        {isTemplate && (
+          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase tracking-wide">
+            <Lock size={9} /> System
+          </span>
+        )}
+        {rule.category && (
+          <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+            <Tag size={11} /> {rule.category}
+          </span>
+        )}
+        {rule.industry && (
+          <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+            <Layers size={11} /> {rule.industry}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

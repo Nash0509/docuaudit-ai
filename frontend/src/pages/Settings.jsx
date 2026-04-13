@@ -2,19 +2,91 @@ import Layout from "../components/layout/Layout";
 import { useState, useEffect } from "react";
 import { getSettings, updateSettings, updatePassword, getCurrentUser } from "../services/api";
 import useStore from "../utils/Store";
-import Card from "../components/ui/Card";
-import Button from "../components/ui/Button";
-import Select from "../components/ui/Select";
 import { useNavigate } from "react-router-dom";
-import { Zap } from "lucide-react";
+import { Settings as SettingsIcon, Zap, Loader2, Save, Shield } from "lucide-react";
+import { motion } from "framer-motion";
+
+function Section({ title, description, children, index = 0 }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.08 }}
+      className="bg-white border border-slate-200 rounded-xl overflow-hidden mb-5 shadow-sm"
+    >
+      <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+        <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
+        <p className="text-xs text-slate-400 mt-0.5">{description}</p>
+      </div>
+      <div className="px-6 py-5 space-y-5">{children}</div>
+    </motion.div>
+  );
+}
+
+function Field({ label, description, children }) {
+  return (
+    <div className="flex items-start justify-between gap-6">
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-slate-700">{label}</div>
+        {description && <div className="text-xs text-slate-400 mt-0.5 leading-relaxed">{description}</div>}
+      </div>
+      <div className="flex-shrink-0">{children}</div>
+    </div>
+  );
+}
+
+function Toggle({ text, description, checked, onChange }) {
+  return (
+    <div className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0">
+      <div>
+        <div className="text-sm text-slate-700">{text}</div>
+        {description && <div className="text-xs text-slate-400 mt-0.5">{description}</div>}
+      </div>
+      <button
+        onClick={onChange}
+        className={`relative w-10 h-5.5 rounded-full transition-colors flex-shrink-0 border-0 cursor-pointer`}
+        style={{
+          width: "40px",
+          height: "22px",
+          borderRadius: "11px",
+          background: checked ? "#6366F1" : "#CBD5E1",
+          transition: "background 0.2s",
+          border: "none",
+          padding: 0,
+        }}
+      >
+        <div style={{
+          width: "16px", height: "16px", borderRadius: "50%", background: "#fff",
+          position: "absolute", top: "3px", left: checked ? "21px" : "3px",
+          transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)"
+        }} />
+      </button>
+    </div>
+  );
+}
+
+function SettingsSelect({ value, onChange, options }) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="h-9 px-3 rounded-lg border border-slate-200 text-sm text-slate-700 bg-white hover:border-slate-300 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-50 outline-none transition-all min-w-[160px]"
+      style={{ fontFamily: "inherit" }}
+    >
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>{o.label}</option>
+      ))}
+    </select>
+  );
+}
 
 export default function Settings() {
-  const setTopBar = useStore(state => state.setTopBar);
-  const storeUser = useStore(state => state.user);
-  const setStoreUser = useStore(state => state.setUser);
-  const [userEmail, setUserEmail] = useState(storeUser?.email || "");
+  const setTopBar = useStore((state) => state.setTopBar);
+  const storeUser = useStore((state) => state.user);
+  const setStoreUser = useStore((state) => state.setUser);
   const navigate = useNavigate();
-  
+
+  const [userEmail, setUserEmail] = useState(storeUser?.email || "");
   const [strictness, setStrictness] = useState("STANDARD");
   const [confidence, setConfidence] = useState(70);
   const [contextChunks, setContextChunks] = useState(5);
@@ -22,20 +94,18 @@ export default function Settings() {
   const [includeRecs, setIncludeRecs] = useState(true);
   const [includeCits, setIncludeCits] = useState(true);
   const [includeConf, setIncludeConf] = useState(true);
-  
   const [rules, setRules] = useState({ payment: true, liability: true, ip: true, termination: true, nda: true });
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     setTopBar("settings");
-    async function loadData() {
+    (async () => {
       try {
         const [settingsData, userData] = await Promise.all([getSettings(), getCurrentUser()]);
         setUserEmail(userData.email);
         setStoreUser(userData);
-
         setStrictness(settingsData.strictness || "STANDARD");
         setConfidence(settingsData.confidence_threshold || 70);
         setContextChunks(settingsData.context_chunks || 5);
@@ -44,13 +114,9 @@ export default function Settings() {
         setIncludeCits(settingsData.include_citations !== false);
         setIncludeConf(settingsData.include_confidence !== false);
         if (settingsData.rule_toggles) setRules(settingsData.rule_toggles);
-      } catch (err) {
-        console.error("Failed to load settings data", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
+    })();
   }, []);
 
   const handleSave = async () => {
@@ -61,128 +127,120 @@ export default function Settings() {
         analysis_depth: analysisDepth, include_recommendations: includeRecs, include_citations: includeCits,
         include_confidence: includeConf, rule_toggles: rules
       });
-      alert("Settings saved successfully!");
-    } catch (err) {
-      alert("Failed to save settings");
-    } finally {
-      setSaving(false);
-    }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (e) { alert("Failed to save settings"); }
+    finally { setSaving(false); }
   };
 
   const handlePasswordChange = async () => {
     const newPassword = prompt("Enter your new password:");
     if (!newPassword) return;
-    try {
-      await updatePassword(newPassword);
-      alert("Password updated successfully!");
-    } catch (err) {
-      alert("Failed to update password");
-    }
+    try { await updatePassword(newPassword); alert("Password updated!"); }
+    catch (e) { alert("Failed to update password"); }
   };
 
   if (loading) return (
     <Layout>
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px", color: "var(--text-muted)" }}>
-        <div style={{ width: "24px", height: "24px", border: "2px solid var(--accent)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite", marginRight: "10px" }} />
-        Loading settings...
+      <div className="flex items-center justify-center h-64 gap-3 text-slate-400">
+        <Loader2 size={18} className="animate-spin text-indigo-500" />
+        <span className="text-sm">Loading settings...</span>
       </div>
     </Layout>
   );
 
   return (
     <Layout>
-      <div style={{ maxWidth: "800px", margin: "auto" }}>
-        {/* ACCOUNT */}
-        <Section title="Account" description="Manage your login and user details">
+      <div className="max-w-2xl">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-7">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <SettingsIcon size={18} className="text-indigo-500" />
+              <h1 className="text-lg font-bold text-slate-900">Settings</h1>
+            </div>
+            <p className="text-sm text-slate-500">Manage your system and audit preferences.</p>
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm ${saved ? "bg-emerald-600 text-white" : "bg-indigo-600 hover:bg-indigo-700 text-white"} disabled:opacity-60`}
+            style={{ fontFamily: "inherit" }}
+          >
+            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {saved ? "Saved!" : saving ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
+
+        {/* Account */}
+        <Section title="Account" description="Manage your login and user details" index={0}>
           <Field label="Email Address" description="The email bound to your account">
-            <div style={{
-              display: "flex", alignItems: "center",
-              background: "var(--bg-surface)", border: "1px solid var(--border)",
-              padding: "10px 16px", borderRadius: "var(--radius-md)",
-              color: "var(--text-primary)", fontWeight: "500", fontSize: "14px",
-              maxWidth: "320px"
-            }}>
+            <div className="px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-600 font-medium min-w-[200px]">
               {userEmail || "Loading..."}
             </div>
           </Field>
-          <Field label="Security" description="Update your login password">
-            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-              <div style={{
-                display: "flex", alignItems: "center",
-                background: "var(--bg-surface)", border: "1px solid var(--border)",
-                padding: "10px 16px", borderRadius: "var(--radius-md)",
-                color: "var(--text-primary)", fontWeight: "700", fontSize: "14px",
-                width: "200px", letterSpacing: "2px"
-              }}>
+          <Field label="Password" description="Update your login credentials">
+            <div className="flex items-center gap-3">
+              <div className="px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-400 tracking-widest min-w-[120px]">
                 ••••••••
               </div>
-              <Button variant="secondary" onClick={handlePasswordChange}>Change Password</Button>
+              <button
+                onClick={handlePasswordChange}
+                className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                style={{ fontFamily: "inherit" }}
+              >
+                Change
+              </button>
             </div>
           </Field>
-          
-          <Field label="Subscription Plan" description="Your current billing and usage tier">
-            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+          <Field label="Subscription Plan" description="Your current billing tier">
+            <div className="flex items-center gap-3">
               {storeUser?.is_subscribed ? (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: "8px",
-                  padding: "6px 14px 6px 8px", borderRadius: "100px",
-                  background: "linear-gradient(135deg, rgba(0,212,170,0.12), rgba(37,99,235,0.08))",
-                  border: "1px solid rgba(0,212,170,0.3)",
-                  boxShadow: "0 0 16px rgba(0,212,170,0.1)"
-                }}>
-                  <div style={{ width: "22px", height: "22px", borderRadius: "8px", background: "linear-gradient(135deg,#00d4aa,#2563eb)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Zap size={12} color="#fff" />
-                  </div>
-                  <span style={{ fontSize: "13px", fontWeight: "800", color: "#fff", letterSpacing: "0.02em" }}>Pro Subscriber</span>
-                  <span style={{ fontSize: "10px", fontWeight: "600", color: "rgba(0,212,170,0.8)" }}>· Unlimited</span>
-                </div>
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-xs font-bold text-indigo-700">
+                  <Shield size={12} /> Pro · Unlimited
+                </span>
               ) : (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: "8px",
-                  padding: "6px 14px 6px 10px", borderRadius: "100px",
-                  background: "rgba(251,191,36,0.06)",
-                  border: "1px solid rgba(251,191,36,0.2)"
-                }}>
-                  <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#fbbf24" }} />
-                  <span style={{ fontSize: "13px", fontWeight: "700", color: "#fbbf24" }}>Free Tier</span>
-                  <span style={{ fontSize: "10px", color: "rgba(251,191,36,0.6)" }}>· 1 Audit Included</span>
-                </div>
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold text-amber-700">
+                  Free · 1 Audit
+                </span>
               )}
-
               {!storeUser?.is_subscribed && (
-                <Button variant="primary" onClick={() => navigate("/pricing")} icon={<Zap size={14} />}>
-                  Upgrade to Pro
-                </Button>
+                <button
+                  onClick={() => navigate("/pricing")}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
+                  style={{ fontFamily: "inherit" }}
+                >
+                  <Zap size={11} /> Upgrade
+                </button>
               )}
             </div>
           </Field>
         </Section>
 
-        {/* AUDIT */}
-        <Section title="Audit Configuration" description="Control how the compliance analysis operates">
-          <Field label="Strictness Level" description="Determines how aggressively violations are flagged">
-            <Select 
-                value={strictness} 
-                onChange={(val) => setStrictness(val)}
-                options={[
-                    { label: 'Relaxed', value: 'RELAXED' },
-                    { label: 'Standard', value: 'STANDARD' },
-                    { label: 'Strict', value: 'STRICT' },
-                ]}
-                style={{ maxWidth: '320px' }}
+        {/* Audit Config */}
+        <Section title="Audit Configuration" description="Control how AI compliance analysis operates" index={1}>
+          <Field label="Strictness Level" description="How aggressively violations are flagged">
+            <SettingsSelect
+              value={strictness}
+              onChange={setStrictness}
+              options={[{ label: "Relaxed", value: "RELAXED" }, { label: "Standard", value: "STANDARD" }, { label: "Strict", value: "STRICT" }]}
             />
           </Field>
-          <Field label="Confidence Threshold" description="Minimum AI confidence required to flag a failure">
-            <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-              <input type="range" min="50" max="95" value={confidence} onChange={(e) => setConfidence(e.target.value)}
-                style={{ width: "240px", accentColor: "var(--accent)", cursor: "pointer" }} />
-              <div style={{ fontWeight: "600", color: "var(--text-primary)", fontSize: "14px", width: "40px" }}>{confidence}%</div>
+          <Field label="Confidence Threshold" description={`Minimum AI confidence to flag a failure (${confidence}%)`}>
+            <div className="flex items-center gap-3">
+              <input
+                type="range" min="50" max="95" value={confidence}
+                onChange={(e) => setConfidence(e.target.value)}
+                className="w-40 cursor-pointer"
+                style={{ accentColor: "#6366F1" }}
+              />
+              <span className="text-sm font-bold text-slate-700 w-10 text-right">{confidence}%</span>
             </div>
           </Field>
         </Section>
 
-        {/* RULES */}
-        <Section title="Rule Engine Options" description="Enable or disable deep compliance checks">
+        {/* Rule Engine */}
+        <Section title="Rule Engine Options" description="Enable or disable deep compliance checks" index={2}>
           <Toggle text="Payment Terms Analysis" checked={rules.payment} onChange={() => setRules({ ...rules, payment: !rules.payment })} />
           <Toggle text="Limitation of Liability Checks" checked={rules.liability} onChange={() => setRules({ ...rules, liability: !rules.liability })} />
           <Toggle text="IP Ownership Review" checked={rules.ip} onChange={() => setRules({ ...rules, ip: !rules.ip })} />
@@ -190,130 +248,31 @@ export default function Settings() {
           <Toggle text="Confidentiality & NDA Validations" checked={rules.nda} onChange={() => setRules({ ...rules, nda: !rules.nda })} />
         </Section>
 
-        {/* AI CAPABILITIES */}
-        <Section title="AI Parameters" description="Fine-tune language model integration limits">
-          <Field label="Document Context Chunks" description="Number of text chunks embedded per retrieval">
-            <Select 
-                value={contextChunks} 
-                onChange={val => setContextChunks(val)}
-                options={[
-                    { label: '3 Chunks', value: '3' },
-                    { label: '5 Chunks', value: '5' },
-                    { label: '7 Chunks', value: '7' },
-                    { label: '10 Chunks', value: '10' },
-                ]}
-                style={{ maxWidth: '320px' }}
+        {/* AI Parameters */}
+        <Section title="AI Parameters" description="Fine-tune language model integration limits" index={3}>
+          <Field label="Context Chunks" description="Number of text chunks embedded per retrieval">
+            <SettingsSelect
+              value={contextChunks}
+              onChange={setContextChunks}
+              options={[{ label: "3 Chunks", value: "3" }, { label: "5 Chunks", value: "5" }, { label: "7 Chunks", value: "7" }, { label: "10 Chunks", value: "10" }]}
             />
           </Field>
-          <Field label="Response Depth" description="Volume and verbosity of generated AI reasoning">
-            <Select 
-                value={analysisDepth} 
-                onChange={val => setAnalysisDepth(val)}
-                options={[
-                    { label: 'Concise', value: 'Concise' },
-                    { label: 'Balanced', value: 'Balanced' },
-                    { label: 'Detailed', value: 'Detailed' },
-                ]}
-                style={{ maxWidth: '320px' }}
+          <Field label="Response Depth" description="Volume and verbosity of AI reasoning">
+            <SettingsSelect
+              value={analysisDepth}
+              onChange={setAnalysisDepth}
+              options={[{ label: "Concise", value: "Concise" }, { label: "Balanced", value: "Balanced" }, { label: "Detailed", value: "Detailed" }]}
             />
           </Field>
         </Section>
 
-        {/* EXPORT OPTIONS */}
-        <Section title="Export Formatting" description="What metadata to include when exporting PDFs">
+        {/* Export Options */}
+        <Section title="Export Formatting" description="What metadata to include when exporting PDFs" index={4}>
           <Toggle text="Include recommendations" checked={includeRecs} onChange={() => setIncludeRecs(!includeRecs)} />
           <Toggle text="Include contract text citations" checked={includeCits} onChange={() => setIncludeCits(!includeCits)} />
           <Toggle text="Include numeric confidence score" checked={includeConf} onChange={() => setIncludeConf(!includeConf)} />
         </Section>
-
-        {/* SAVE STICKY */}
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "32px", marginBottom: "40px" }}>
-          <Button variant="primary" size="lg" onClick={handleSave} loading={saving}>
-            Save Changes
-          </Button>
-        </div>
       </div>
     </Layout>
   );
 }
-
-function Section({ title, description, children }) {
-  return (
-    <Card hover={false} style={{ marginBottom: "24px", padding: 0 }}>
-      <div style={{ 
-        padding: "20px 24px", 
-        borderBottom: "1px solid var(--border)", 
-        background: "rgba(255,255,255,0.01)",
-        borderTopLeftRadius: "var(--radius-lg)",
-        borderTopRightRadius: "var(--radius-lg)"
-      }}>
-        <h3 style={{ fontSize: "16px", fontWeight: "600", color: "var(--text-primary)", margin: 0, marginBottom: "4px" }}>{title}</h3>
-        <p style={{ fontSize: "13px", color: "var(--text-muted)", margin: 0 }}>{description}</p>
-      </div>
-      <div style={{ padding: "24px" }}>
-        {children}
-      </div>
-    </Card>
-  );
-}
-
-function Field({ label, description, children }) {
-  return (
-    <div style={{ marginBottom: "20px" }}>
-      <div style={{ marginBottom: "8px" }}>
-        <div style={{ fontSize: "14px", fontWeight: "500", color: "var(--text-primary)" }}>{label}</div>
-        <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>{description}</div>
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function Toggle({ text, checked, onChange }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: "1px solid var(--border)" }}>
-      <div style={{ fontSize: "14px", color: "var(--text-secondary)" }}>{text}</div>
-      <div
-        onClick={onChange}
-        style={{
-          width: "36px", height: "20px", borderRadius: "10px",
-          background: checked ? "var(--accent)" : "rgba(255,255,255,0.1)",
-          cursor: "pointer", position: "relative", transition: "0.2s ease"
-        }}
-      >
-        <div style={{
-          width: "16px", height: "16px", borderRadius: "50%", background: "#fff",
-          position: "absolute", top: "2px", left: checked ? "18px" : "2px",
-          transition: "0.2s ease", boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
-        }} />
-      </div>
-    </div>
-  );
-}
-
-function Input(props) {
-  return (
-    <input
-      {...props}
-      style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border)",
-        padding: "0 12px",
-        height: "40px",
-        borderRadius: "var(--radius-md)",
-        color: "var(--text-primary)",
-        width: "100%",
-        maxWidth: "320px",
-        fontSize: "14px",
-        fontFamily: "inherit",
-        opacity: props.disabled ? 0.6 : 1,
-        transition: "border-color 0.2s",
-        ...props.style
-      }}
-      onFocus={(e) => { if (!props.disabled) e.target.style.borderColor = "var(--border-accent)"; }}
-      onBlur={(e) => { if (!props.disabled) e.target.style.borderColor = "var(--border)"; }}
-    />
-  );
-}
-
-

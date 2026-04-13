@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Check, BellOff, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Check, BellOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../../utils/Store';
 import NotificationItem from './NotificationItem';
-import NotificationSkeleton from './NotificationSkeleton';
 import axios from 'axios';
 
-// Use the same base URL as the shared API service
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
 });
@@ -31,104 +29,53 @@ export default function NotificationPanel({ onClose, onCountChange, onRefetchCou
       setLoading(true);
       const res = await API.get('/notifications');
       setNotifications(res.data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
   const handleMarkRead = async (id) => {
     try {
       await API.put(`/notifications/${id}/read`);
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+      setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, is_read: true } : n));
       onRefetchCount();
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   };
 
   const handleMarkAllRead = async () => {
     try {
       await API.put('/notifications/read-all');
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
       onCountChange(0);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   };
 
-  // Group notifications
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const groups = {
-    Today: [],
-    Yesterday: [],
-    Older: []
-  };
-
-  notifications.forEach(n => {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+  const groups = { Today: [], Yesterday: [], Older: [] };
+  notifications.forEach((n) => {
     const d = new Date(n.created_at + 'Z');
-    if (d >= today) {
-      groups.Today.push(n);
-    } else if (d >= yesterday) {
-      groups.Yesterday.push(n);
-    } else {
-      groups.Older.push(n);
-    }
+    if (d >= today) groups.Today.push(n);
+    else if (d >= yesterday) groups.Yesterday.push(n);
+    else groups.Older.push(n);
   });
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -12, scale: 0.96 }}
+      initial={{ opacity: 0, y: -10, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -12, scale: 0.96 }}
-      transition={{ 
-        type: "spring", 
-        stiffness: 400, 
-        damping: 30, 
-        mass: 0.8 
-      }}
-      style={{
-        position: 'absolute',
-        top: 'calc(100% + 12px)',
-        right: 0,
-        width: '400px',
-        background: 'rgba(15, 23, 42, 0.98)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
-        borderRadius: '16px',
-        boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)',
-        overflow: 'hidden',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-        transformOrigin: 'top right'
-      }}
+      exit={{ opacity: 0, y: -10, scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+      className="absolute top-[calc(100%+10px)] right-0 w-96 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden z-[1000]"
+      style={{ transformOrigin: 'top right' }}
     >
       {/* Header */}
-      <div style={{
-        padding: '20px 24px',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        background: 'rgba(255, 255, 255, 0.02)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Notifications</h3>
+      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div className="flex items-center gap-2.5">
+          <h3 className="text-sm font-bold text-slate-900">Notifications</h3>
           {unreadCount > 0 && (
-            <span style={{ 
-              background: 'var(--accent)', color: '#020617', 
-              fontSize: '11px', fontWeight: '800', padding: '2px 8px', borderRadius: '12px' 
-            }}>
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600 border border-indigo-200">
               {unreadCount}
             </span>
           )}
@@ -136,85 +83,47 @@ export default function NotificationPanel({ onClose, onCountChange, onRefetchCou
         {unreadCount > 0 && (
           <button
             onClick={handleMarkAllRead}
-            style={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.05)',
-              color: 'var(--text-secondary)',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '6px 10px',
-              borderRadius: '8px',
-              transition: 'all 0.15s ease'
-            }}
-            onMouseEnter={(e) => { 
-                e.currentTarget.style.color = 'var(--text-primary)'; 
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; 
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)'; 
-            }}
-            onMouseLeave={(e) => { 
-                e.currentTarget.style.color = 'var(--text-secondary)'; 
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; 
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)'; 
-            }}
+            className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-100"
+            style={{ fontFamily: 'inherit' }}
           >
-            <Check size={14} /> Mark all read
+            <Check size={12} /> Mark all read
           </button>
         )}
       </div>
 
       {/* Body */}
-      <div 
-        className="custom-scrollbar"
-        style={{ maxHeight: '420px', overflowY: 'auto', overflowX: 'hidden' }}
-      >
-        <style>{`
-          .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-          .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-          .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); borderRadius: 10px; }
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
-        `}</style>
-
+      <div className="max-h-[400px] overflow-y-auto">
         {loading ? (
-          <div style={{ padding: '20px 0' }}><NotificationSkeleton /></div>
+          <div className="p-4 space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className="skeleton w-8 h-8 rounded-full flex-shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="skeleton h-3 w-3/4 rounded" />
+                  <div className="skeleton h-2.5 w-full rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : notifications.length === 0 ? (
-          <div style={{ padding: '60px 24px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <div style={{ 
-              width: '56px', height: '56px', borderRadius: '18px', 
-              background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.05)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              margin: '0 auto 16px',
-              transform: 'rotate(-5deg)'
-            }}>
-              <BellOff size={24} color="var(--text-muted)" />
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-3">
+              <BellOff size={20} className="text-slate-400" style={{ transform: 'rotate(-5deg)' }} />
             </div>
-            <div style={{ fontSize: '15px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '4px' }}>All caught up!</div>
-            <div style={{ fontSize: '13px', opacity: 0.7 }}>No unread notifications for now.</div>
+            <p className="text-sm font-semibold text-slate-700 mb-1">All caught up!</p>
+            <p className="text-xs text-slate-400">No new notifications for now.</p>
           </div>
         ) : (
-          <div style={{ padding: '0 8px 12px' }}>
-            {Object.entries(groups).map(([groupName, items]) => {
+          <div className="py-2">
+            {Object.entries(groups).map(([group, items]) => {
               if (items.length === 0) return null;
               return (
-                <div key={groupName}>
-                  <div style={{
-                    padding: '16px 16px 8px',
-                    fontSize: '11px',
-                    fontWeight: '700',
-                    color: 'var(--text-muted)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    opacity: 0.6
-                  }}>
-                    {groupName}
+                <div key={group}>
+                  <div className="px-5 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    {group}
                   </div>
                   {items.map((n) => (
-                    <NotificationItem 
-                      key={n.id} 
-                      notification={n} 
-                      onRead={handleMarkRead} 
-                    />
+                    <NotificationItem key={n.id} notification={n} onRead={handleMarkRead} />
                   ))}
                 </div>
               );
@@ -225,4 +134,3 @@ export default function NotificationPanel({ onClose, onCountChange, onRefetchCou
     </motion.div>
   );
 }
-

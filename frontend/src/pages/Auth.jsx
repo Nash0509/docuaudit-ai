@@ -1,10 +1,34 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useMediaQuery from "../utils/useMediaQuery";
 import useStore from "../utils/Store";
 import { loginUser, registerUser, loginGuest } from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldCheck, Mail, Lock, ArrowRight, User } from "lucide-react";
+import { ShieldCheck, Mail, Lock, ArrowRight, User, Loader2 } from "lucide-react";
+
+function InputField({ label, type, value, onChange, placeholder, icon: Icon }) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div>
+      <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>
+      <div className="relative">
+        <Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          required
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          className={`w-full pl-10 pr-4 h-11 rounded-lg border text-sm text-slate-900 bg-white outline-none transition-all placeholder:text-slate-400
+            ${focused ? "border-indigo-400 ring-3 ring-indigo-50" : "border-slate-300 hover:border-slate-400"}
+          `}
+          style={{ fontFamily: "inherit" }}
+        />
+      </div>
+    </div>
+  );
+}
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,10 +37,10 @@ function Auth() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [guestLoading, setGuestLoading] = useState(false);
-  
-  const isMobile = useMediaQuery("(max-width: 768px)");
+
   const navigate = useNavigate();
   const setToken = useStore((state) => state.setToken);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -29,13 +53,11 @@ function Auth() {
       } else {
         await registerUser(email, password);
         setIsLogin(true);
-        setError("Registration successful! Please sign in.");
+        setError("Account created! Please sign in.");
       }
     } catch (err) {
       setError(err.response?.data?.detail || "Authentication failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   const handleGuestLogin = async () => {
@@ -47,257 +69,145 @@ function Auth() {
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.detail || "Guest login failed. Please try again.");
-    } finally {
-      setGuestLoading(false);
-    }
+    } finally { setGuestLoading(false); }
   };
 
-  const isSuccess = error && error.includes("successful");
+  const isSuccess = error && error.includes("created");
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      background: "var(--bg-base)",
-      position: "relative",
-      padding: "20px",
-    }}>
-      {/* Ambient background glows */}
-      <div style={{ position: "absolute", top: "20%", left: "15%", width: "500px", height: "500px", borderRadius: "50%", background: "rgba(0, 212, 170, 0.04)", filter: "blur(100px)", pointerEvents: "none" }} />
-      
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        style={{ width: "100%", maxWidth: "400px" }}
-      >
-        <div style={{
-          background: "rgba(15, 23, 42, 0.9)",
-          backdropFilter: "blur(20px)",
-          borderRadius: "24px",
-          border: "1px solid var(--border)",
-          boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
-          overflow: "hidden",
-        }}>
-          {/* Header */}
-          <div style={{ padding: isMobile ? "28px 24px" : "36px 36px 28px", borderBottom: "1px solid var(--border)", textAlign: "center", background: "rgba(255,255,255,0.01)" }}>
-            <div style={{
-              width: isMobile ? "48px" : "56px", 
-              height: isMobile ? "48px" : "56px",
-              borderRadius: "14px",
-              background: "linear-gradient(135deg, #00d4aa22, #2563eb22)",
-              border: "1px solid var(--border-accent)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              margin: "0 auto 16px",
-            }}>
-              <ShieldCheck size={isMobile ? 22 : 26} color="var(--accent)" />
-            </div>
-            <h1 style={{ fontSize: isMobile ? "20px" : "24px", fontWeight: "700", color: "var(--text-primary)", marginBottom: "4px" }}>
-              DocuAudit <span style={{ color: "var(--accent)" }}>AI</span>
-            </h1>
-            <p style={{ color: "var(--text-muted)", fontSize: "13px", margin: 0 }}>
-              {isLogin ? "Sign in to your workspace" : "Create a new account"}
-            </p>
+    <div className="min-h-screen flex bg-slate-50">
+      {/* Left Branding Panel — hidden on small screens */}
+      <div className="hidden lg:flex flex-col justify-between w-[45%] bg-indigo-600 p-12 text-white">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+            <ShieldCheck size={18} color="white" strokeWidth={2.5} />
           </div>
+          <span className="font-bold text-lg tracking-tight">DocuAudit AI</span>
+        </div>
 
-
-          {/* Form */}
-          <div style={{ padding: "28px 36px 32px" }}>
-            {/* Error/Success Banner */}
-            <AnimatePresence>
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  animate={{ opacity: 1, height: "auto", marginBottom: "20px" }}
-                  exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                  style={{
-                    background: isSuccess ? "var(--success-dim)" : "var(--danger-dim)",
-                    color: isSuccess ? "var(--success)" : "var(--danger)",
-                    border: `1px solid ${isSuccess ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}`,
-                    padding: "12px 16px",
-                    borderRadius: "var(--radius-md)",
-                    fontSize: "13px",
-                    lineHeight: "1.4",
-                  }}
-                >
-                  {error}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              {/* Email */}
-              <div>
-                <label style={{ display: "block", color: "var(--text-secondary)", marginBottom: "8px", fontSize: "13px", fontWeight: "500" }}>
-                  Email address
-                </label>
-                <div style={{ position: "relative" }}>
-                  <Mail size={16} color="var(--text-muted)" style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@company.com"
-                    required
-                    style={{
-                      width: "100%",
-                      padding: "0 14px 0 42px",
-                      height: "44px",
-                      borderRadius: "var(--radius-md)",
-                      background: "var(--bg-surface)",
-                      border: "1px solid var(--border)",
-                      color: "var(--text-primary)",
-                      fontSize: "14px",
-                      fontFamily: "inherit",
-                      outline: "none",
-                      transition: "border-color 0.2s",
-                    }}
-                    onFocus={(e) => { e.target.style.borderColor = "var(--border-accent)"; }}
-                    onBlur={(e) => { e.target.style.borderColor = "var(--border)"; }}
-                  />
-                </div>
+        <div>
+          <h1 className="text-4xl font-black leading-tight mb-5">
+            AI-powered compliance<br />for legal documents
+          </h1>
+          <p className="text-indigo-200 text-base leading-relaxed mb-8">
+            DocuAudit AI helps legal, compliance, and audit teams analyze contracts at scale with precision AI analysis.
+          </p>
+          <div className="space-y-3">
+            {[
+              "Automated risk detection in seconds",
+              "Clause-level compliance checking",
+              "Export audit reports as PDF",
+            ].map((f) => (
+              <div key={f} className="flex items-center gap-3 text-sm text-indigo-100">
+                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-xs">✓</div>
+                {f}
               </div>
-
-              {/* Password */}
-              <div>
-                <label style={{ display: "block", color: "var(--text-secondary)", marginBottom: "8px", fontSize: "13px", fontWeight: "500" }}>
-                  Password
-                </label>
-                <div style={{ position: "relative" }}>
-                  <Lock size={16} color="var(--text-muted)" style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    style={{
-                      width: "100%",
-                      padding: "0 14px 0 42px",
-                      height: "44px",
-                      borderRadius: "var(--radius-md)",
-                      background: "var(--bg-surface)",
-                      border: "1px solid var(--border)",
-                      color: "var(--text-primary)",
-                      fontSize: "14px",
-                      fontFamily: "inherit",
-                      outline: "none",
-                      transition: "border-color 0.2s",
-                    }}
-                    onFocus={(e) => { e.target.style.borderColor = "var(--border-accent)"; }}
-                    onBlur={(e) => { e.target.style.borderColor = "var(--border)"; }}
-                  />
-                </div>
-              </div>
-
-              {/* Submit */}
-              <motion.button
-                type="submit"
-                disabled={loading}
-                whileTap={!loading ? { scale: 0.99 } : {}}
-                style={{
-                  width: "100%",
-                  height: "44px",
-                  borderRadius: "var(--radius-md)",
-                  background: "linear-gradient(135deg, #00d4aa, #2563eb)",
-                  color: "#020617",
-                  fontWeight: "700",
-                  fontSize: "14px",
-                  fontFamily: "inherit",
-                  border: "none",
-                  cursor: loading ? "not-allowed" : "pointer",
-                  opacity: loading ? 0.75 : 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "8px",
-                  boxShadow: "0 4px 14px rgba(0,212,170,0.25)",
-                  transition: "opacity 0.2s",
-                  marginTop: "4px",
-                }}
-              >
-                {loading ? (
-                  <span style={{ width: "16px", height: "16px", border: "2px solid rgba(0,0,0,0.4)", borderTopColor: "rgba(0,0,0,0.9)", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} />
-                ) : (
-                  <>
-                    {isLogin ? "Sign In" : "Create Account"} <ArrowRight size={16} />
-                  </>
-                )}
-              </motion.button>
-            </form>
-
-            {/* Divider with "or" */}
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", margin: "20px 0" }}>
-              <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
-              <span style={{ color: "var(--text-muted)", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>or</span>
-              <div style={{ flex: 1, height: "1px", background: "var(--border)" }} />
-            </div>
-
-            {/* Guest Login Button */}
-            <motion.button
-              onClick={handleGuestLogin}
-              disabled={guestLoading}
-              whileHover={{ borderColor: "rgba(0, 212, 170, 0.4)", background: "rgba(0, 212, 170, 0.05)" }}
-              whileTap={!guestLoading ? { scale: 0.99 } : {}}
-              style={{
-                width: "100%",
-                height: "44px",
-                borderRadius: "var(--radius-md)",
-                background: "transparent",
-                color: "var(--text-secondary)",
-                fontWeight: "600",
-                fontSize: "14px",
-                fontFamily: "inherit",
-                border: "1px solid var(--border)",
-                cursor: guestLoading ? "not-allowed" : "pointer",
-                opacity: guestLoading ? 0.75 : 1,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                transition: "all 0.2s ease",
-              }}
-            >
-              {guestLoading ? (
-                <span style={{ width: "16px", height: "16px", border: "2px solid rgba(255,255,255,0.2)", borderTopColor: "rgba(255,255,255,0.7)", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} />
-              ) : (
-                <>
-                  <User size={16} /> Continue as Guest
-                </>
-              )}
-            </motion.button>
-
-            {/* Toggle */}
-            <div style={{ textAlign: "center", marginTop: "24px", paddingTop: "20px", borderTop: "1px solid var(--border)" }}>
-              <span style={{ color: "var(--text-muted)", fontSize: "13px" }}>
-                {isLogin ? "Don't have an account?" : "Already have an account?"}
-              </span>
-              {" "}
-              <button
-                onClick={() => { setIsLogin(!isLogin); setError(""); }}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--accent)",
-                  cursor: "pointer",
-                  fontSize: "13px",
-                  fontWeight: "600",
-                  fontFamily: "inherit",
-                  padding: 0,
-                }}
-              >
-                {isLogin ? "Sign up" : "Sign in"}
-              </button>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Footer Sub-text */}
-        <p style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "12px", marginTop: "20px" }}>
-          AI-Powered Contract Compliance · Secure & Private
+        <p className="text-xs text-indigo-300">
+          Enterprise-grade security · SOC 2 compliant · Data encrypted at rest
         </p>
-      </motion.div>
+      </div>
+
+      {/* Right Form Panel */}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-sm"
+        >
+          {/* Mobile Logo */}
+          <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
+            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
+              <ShieldCheck size={18} color="white" strokeWidth={2.5} />
+            </div>
+            <span className="font-bold text-lg text-slate-900">DocuAudit AI</span>
+          </div>
+
+          <h2 className="text-2xl font-bold text-slate-900 mb-1">
+            {isLogin ? "Welcome back" : "Create your account"}
+          </h2>
+          <p className="text-sm text-slate-500 mb-7">
+            {isLogin ? "Sign in to your compliance workspace." : "Start auditing documents in minutes."}
+          </p>
+
+          {/* Alert */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                animate={{ opacity: 1, height: "auto", marginBottom: "20px" }}
+                exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                className={`text-sm px-4 py-3 rounded-lg border ${isSuccess
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-red-50 text-red-700 border-red-200"
+                }`}
+              >
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <InputField
+              label="Email address"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@company.com"
+              icon={Mail}
+            />
+            <InputField
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              icon={Lock}
+            />
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full h-11 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-colors mt-2"
+              style={{ fontFamily: "inherit" }}
+            >
+              {loading ? <Loader2 size={16} className="animate-spin" /> : (
+                <>{isLogin ? "Sign In" : "Create Account"} <ArrowRight size={15} /></>
+              )}
+            </button>
+          </form>
+
+          <div className="flex items-center gap-3 my-5">
+            <div className="flex-1 h-px bg-slate-200" />
+            <span className="text-xs text-slate-400 uppercase tracking-wide">or</span>
+            <div className="flex-1 h-px bg-slate-200" />
+          </div>
+
+          <button
+            onClick={handleGuestLogin}
+            disabled={guestLoading}
+            className="w-full h-11 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-60 text-slate-700 font-medium text-sm flex items-center justify-center gap-2 transition-colors"
+            style={{ fontFamily: "inherit" }}
+          >
+            {guestLoading ? <Loader2 size={15} className="animate-spin text-slate-400" /> : <User size={15} className="text-slate-400" />}
+            Continue as Guest
+          </button>
+
+          <p className="text-center text-sm text-slate-500 mt-6">
+            {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
+            <button
+              onClick={() => { setIsLogin(!isLogin); setError(""); }}
+              className="text-indigo-600 font-semibold hover:text-indigo-700"
+              style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+            >
+              {isLogin ? "Sign up" : "Sign in"}
+            </button>
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 }

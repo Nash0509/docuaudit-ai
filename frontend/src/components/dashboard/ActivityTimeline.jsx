@@ -4,13 +4,13 @@ import { getActivities } from "../../services/api";
 import { UploadCloud, ShieldCheck, Trash2, AlertTriangle, Activity, Settings, FileText } from "lucide-react";
 
 const EVENT_MAP = {
-  upload: { icon: UploadCloud, color: "#00d4aa" },
-  audit:  { icon: ShieldCheck,  color: "#22c55e" },
-  delete: { icon: Trash2,       color: "#ef4444" },
-  alert:  { icon: AlertTriangle, color: "#f59e0b" },
-  rule:   { icon: Settings,     color: "#6366f1" },
-  report: { icon: FileText,     color: "#3b82f6" },
-  default:{ icon: Activity,     color: "#475569" },
+  upload:  { icon: UploadCloud,  color: "#6366F1", bg: "bg-indigo-50", border: "border-indigo-100" },
+  audit:   { icon: ShieldCheck,   color: "#10B981", bg: "bg-emerald-50", border: "border-emerald-100" },
+  delete:  { icon: Trash2,        color: "#EF4444", bg: "bg-red-50", border: "border-red-100" },
+  alert:   { icon: AlertTriangle, color: "#F59E0B", bg: "bg-amber-50", border: "border-amber-100" },
+  rule:    { icon: Settings,      color: "#8B5CF6", bg: "bg-violet-50", border: "border-violet-100" },
+  report:  { icon: FileText,      color: "#3B82F6", bg: "bg-blue-50", border: "border-blue-100" },
+  default: { icon: Activity,      color: "#64748B", bg: "bg-slate-50", border: "border-slate-200" },
 };
 
 function classify(action = "") {
@@ -36,13 +36,13 @@ function timeAgo(ts) {
 
 function SkeletonRow() {
   return (
-    <div style={{ display: "flex", gap: "14px", alignItems: "center", padding: "8px 0" }}>
-      <div className="skeleton" style={{ width: "32px", height: "32px", borderRadius: "10px", flexShrink: 0 }} />
-      <div style={{ flex: 1 }}>
-        <div className="skeleton" style={{ width: "65%", height: "11px", borderRadius: "4px", marginBottom: "6px" }} />
-        <div className="skeleton" style={{ width: "35%", height: "9px", borderRadius: "4px" }} />
+    <div className="flex items-center gap-3 py-3">
+      <div className="skeleton w-8 h-8 rounded-full flex-shrink-0" />
+      <div className="flex-1 space-y-1.5">
+        <div className="skeleton h-3 w-2/3 rounded" />
+        <div className="skeleton h-2.5 w-1/3 rounded" />
       </div>
-      <div className="skeleton" style={{ width: "40px", height: "9px", borderRadius: "4px" }} />
+      <div className="skeleton h-2.5 w-10 rounded" />
     </div>
   );
 }
@@ -53,71 +53,53 @@ export default function ActivityTimeline() {
 
   useEffect(() => {
     getActivities()
-      .then(d => setItems(Array.isArray(d) ? d.slice(0, 8) : []))
+      .then((d) => setItems(Array.isArray(d) ? d.slice(0, 8) : []))
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
-    return <div style={{ display: "flex", flexDirection: "column" }}>{[...Array(5)].map((_, i) => <SkeletonRow key={i} />)}</div>;
+    return <div className="space-y-0.5">{[...Array(5)].map((_, i) => <SkeletonRow key={i} />)}</div>;
   }
 
   if (items.length === 0) {
-    return <div style={{ padding: "24px 0", textAlign: "center", color: "var(--text-muted)", fontSize: "13px" }}>No recent activity yet.</div>;
+    return (
+      <div className="text-center py-8 text-sm text-slate-400">
+        No recent activity yet. Upload a document to get started.
+      </div>
+    );
   }
 
   return (
-    <div style={{ position: "relative" }}>
-      {/* Vertical connector */}
-      <div style={{
-        position: "absolute", left: "15px", top: "16px",
-        width: "1px", bottom: "16px",
-        background: "linear-gradient(to bottom, rgba(255,255,255,0.08) 0%, transparent 100%)",
-      }} />
+    <div className="space-y-0">
+      {items.map((item, i) => {
+        const type = classify(item.action);
+        const { icon: Icon, color, bg, border } = EVENT_MAP[type] || EVENT_MAP.default;
+        const isLast = i === items.length - 1;
 
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        {items.map((item, i) => {
-          const type = classify(item.action);
-          const { icon: Icon, color } = EVENT_MAP[type] || EVENT_MAP.default;
-          const isLast = i === items.length - 1;
-
-          return (
-            <motion.div
-              key={item.id || i}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.3 }}
-              style={{
-                display: "flex", gap: "14px", alignItems: "center",
-                padding: "10px 0",
-                borderBottom: isLast ? "none" : "1px solid rgba(255,255,255,0.03)",
-              }}
+        return (
+          <motion.div
+            key={item.id || i}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.04, duration: 0.3 }}
+            className={`flex items-center gap-3 py-3 ${!isLast ? "border-b border-slate-100" : ""}`}
+          >
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border ${bg} ${border}`}
+              style={{ color }}
             >
-              <div style={{
-                width: "32px", height: "32px", borderRadius: "10px", flexShrink: 0,
-                background: `${color}18`, border: `1px solid ${color}30`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color, zIndex: 1,
-              }}>
-                <Icon size={13} />
-              </div>
-
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontSize: "13px", fontWeight: "500", color: "var(--text-primary)",
-                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                }}>
-                  {item.action}
-                </div>
-              </div>
-
-              <div style={{ fontSize: "11px", color: "var(--text-muted)", flexShrink: 0 }}>
-                {item.timestamp ? timeAgo(item.timestamp) : "—"}
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
+              <Icon size={14} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm text-slate-700 font-medium truncate">{item.action}</div>
+            </div>
+            <div className="text-xs text-slate-400 flex-shrink-0">
+              {item.timestamp ? timeAgo(item.timestamp) : "—"}
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }
