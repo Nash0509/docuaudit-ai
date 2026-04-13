@@ -3,40 +3,49 @@ import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../components/layout/Layout";
 import useStore from "../utils/Store";
 import { getAuditResult } from "../services/api";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
-import { Download, AlertCircle, ChevronDown, CheckCircle, XCircle, AlertTriangle, ArrowLeft } from "lucide-react";
+import { Download, AlertCircle, ChevronDown, CheckCircle, XCircle, AlertTriangle, ArrowLeft, Printer } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 function RiskGaugeSimple({ score }) {
-  const color = score >= 70 ? "#EF4444" : score >= 40 ? "#F59E0B" : "#10B981";
+  const color = score >= 70 ? "var(--danger)" : score >= 40 ? "var(--warn)" : "var(--success)";
   const label = score >= 70 ? "High Risk" : score >= 40 ? "Medium Risk" : "Low Risk";
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="w-32 h-32 rounded-full border-4 flex flex-col items-center justify-center"
-        style={{ borderColor: `${color}30`, background: `${color}08` }}>
-        <div className="text-4xl font-black" style={{ color }}>{score}</div>
-        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Score</div>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+      <div style={{
+        width: 128, height: 128, borderRadius: "50%", border: `4px solid ${color}`, opacity: 0.8,
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center"
+      }}>
+        <div style={{ fontSize: 36, fontWeight: 900, color, lineHeight: 1 }}>{score}</div>
+        <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 4 }}>Score</div>
       </div>
-      <span className="text-sm font-semibold" style={{ color }}>{label}</span>
+      <span style={{ fontSize: 14, fontWeight: 600, color }}>{label}</span>
     </div>
   );
 }
 
-function FilterTab({ text, count, active, onClick, color }) {
+function FilterTab({ text, count, active, onClick, colorStr }) {
+  const colorMap = {
+    info: { main: "var(--info)", bg: "var(--info-light)", border: "var(--info-border)" },
+    danger: { main: "var(--danger)", bg: "var(--danger-light)", border: "var(--danger-border)" },
+    warn: { main: "var(--warn)", bg: "var(--warn-light)", border: "var(--warn-border)" },
+    success: { main: "var(--success)", bg: "var(--success-light)", border: "var(--success-border)" }
+  };
+  const themeColors = colorMap[colorStr] || colorMap.info;
+  const color = themeColors.main;
+
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all border`}
       style={{
-        background: active ? `${color}12` : "transparent",
-        color: active ? color : "#64748B",
-        borderColor: active ? `${color}30` : "transparent",
-        fontFamily: "inherit"
+        display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 8, fontSize: 14, fontWeight: 600, transition: "all 0.2s",
+        background: active ? themeColors.bg : "transparent",
+        color: active ? color : "var(--text-secondary)",
+        border: `1px solid ${active ? themeColors.border : "transparent"}`,
+        cursor: "pointer"
       }}
     >
       {text}
-      <span className="px-2 py-0.5 rounded-full text-xs" style={{ background: active ? color : "#F1F5F9", color: active ? "#fff" : "#94A3B8" }}>
+      <span style={{ padding: "2px 8px", borderRadius: 12, fontSize: 12, background: active ? color : "var(--border)", color: active ? "#fff" : "var(--text-muted)" }}>
         {count}
       </span>
     </button>
@@ -46,32 +55,40 @@ function FilterTab({ text, count, active, onClick, color }) {
 function RuleCard({ rule }) {
   const [open, setOpen] = useState(false);
   const statusCfg = {
-    FAIL: { cls: "bg-red-50 text-red-700 border-red-200", icon: <XCircle size={14} className="text-red-500" />, dot: "bg-red-500" },
-    WARN: { cls: "bg-amber-50 text-amber-700 border-amber-200", icon: <AlertTriangle size={14} className="text-amber-500" />, dot: "bg-amber-400" },
-    PASS: { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: <CheckCircle size={14} className="text-emerald-500" />, dot: "bg-emerald-500" },
+    FAIL: { bg: "var(--danger-light)", text: "var(--danger)", border: "var(--danger-border)", icon: <XCircle size={14} color="var(--danger)" /> },
+    WARN: { bg: "var(--warn-light)", text: "var(--warn)", border: "var(--warn-border)", icon: <AlertTriangle size={14} color="var(--warn)" /> },
+    PASS: { bg: "var(--success-light)", text: "var(--success)", border: "var(--success-border)", icon: <CheckCircle size={14} color="var(--success)" /> },
   };
   const cfg = statusCfg[rule.status] || statusCfg.PASS;
-  const sevCfg = { HIGH: "text-red-600 bg-red-50 border-red-200", MEDIUM: "text-amber-600 bg-amber-50 border-amber-200", LOW: "text-slate-500 bg-slate-50 border-slate-200" };
+  const sevCfg = {
+    HIGH: { text: "var(--danger)", bg: "var(--danger-light)", border: "var(--danger-border)" },
+    MEDIUM: { text: "var(--warn)", bg: "var(--warn-light)", border: "var(--warn-border)" },
+    LOW: { text: "var(--text-muted)", bg: "var(--border)", border: "var(--border-hover)" }
+  };
+  const sCfg = sevCfg[rule.severity] || sevCfg.LOW;
 
   return (
     <div
-      className={`bg-white border rounded-xl mb-3 overflow-hidden cursor-pointer hover:border-slate-300 transition-all ${open ? "border-slate-300 shadow-sm" : "border-slate-200"}`}
       onClick={() => setOpen(!open)}
+      className="rule-card"
+      style={{
+        background: "var(--bg-surface)", border: `1px solid ${open ? "var(--border-hover)" : "var(--border)"}`, borderRadius: 12, marginBottom: 12, overflow: "hidden", cursor: "pointer", transition: "all 0.2s", boxShadow: open ? "var(--shadow-sm)" : "none"
+      }}
     >
-      <div className="flex items-start justify-between px-5 py-4 gap-3">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <ChevronDown size={15} className="text-slate-400 flex-shrink-0 transition-transform" style={{ transform: open ? "rotate(0deg)" : "rotate(-90deg)" }} />
-          <div className="min-w-0">
-            <div className="text-sm font-semibold text-slate-800">{rule.rule_name}</div>
-            {!open && <div className="text-xs text-slate-400 mt-0.5 truncate">{rule.finding || "No finding details provided."}</div>}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "16px 20px", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 0 }}>
+          <ChevronDown size={15} color="var(--text-muted)" style={{ flexShrink: 0, transition: "transform 0.2s", transform: open ? "rotate(0deg)" : "rotate(-90deg)" }} />
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{rule.rule_name}</div>
+            {!open && <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{rule.finding || "No finding details provided."}</div>}
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.cls}`}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}` }}>
             {cfg.icon} {rule.status}
           </span>
           {rule.severity && (
-            <span className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold border ${sevCfg[rule.severity] || sevCfg.LOW}`}>
+            <span style={{ display: "inline-flex", padding: "4px 8px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: sCfg.bg, color: sCfg.text, border: `1px solid ${sCfg.border}` }}>
               {rule.severity}
             </span>
           )}
@@ -84,28 +101,28 @@ function RuleCard({ rule }) {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden"
+            style={{ overflow: "hidden" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-5 pb-5 pt-1 border-t border-slate-100 bg-slate-50 space-y-4">
+            <div style={{ padding: "4px 20px 20px", borderTop: "1px solid var(--border)", background: "var(--bg-surface-hover)", display: "flex", flexDirection: "column", gap: 16 }}>
               {rule.finding && (
                 <div>
-                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Finding</div>
-                  <p className="text-sm text-slate-700 leading-relaxed">{rule.finding}</p>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Finding</div>
+                  <p style={{ fontSize: 14, color: "var(--text-primary)", lineHeight: 1.6, margin: 0 }}>{rule.finding}</p>
                 </div>
               )}
               {rule.citation && (
                 <div>
-                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Document Citation</div>
-                  <blockquote className="text-sm text-slate-600 italic border-l-2 border-indigo-400 pl-3 leading-relaxed">
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Document Citation</div>
+                  <blockquote style={{ fontSize: 14, color: "var(--text-muted)", fontStyle: "italic", borderLeft: "2px solid var(--info)", paddingLeft: 12, margin: 0, lineHeight: 1.6 }}>
                     "{rule.citation}"
                   </blockquote>
                 </div>
               )}
               {rule.suggestion && (
-                <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3">
-                  <div className="text-[11px] font-bold text-indigo-400 uppercase tracking-widest mb-1">AI Suggestion</div>
-                  <p className="text-sm text-indigo-800 leading-relaxed">{rule.suggestion}</p>
+                <div style={{ background: "var(--info-light)", border: "1px solid var(--info-border)", borderRadius: 8, padding: 12 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--info)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>AI Suggestion</div>
+                  <p style={{ fontSize: 14, color: "var(--info)", lineHeight: 1.6, margin: 0 }}>{rule.suggestion}</p>
                 </div>
               )}
             </div>
@@ -134,34 +151,27 @@ export default function Report() {
     })();
   }, [id]);
 
-  async function exportPDF() {
-    if (!reportRef.current) return;
-    const canvas = await html2canvas(reportRef.current, { scale: 2 });
-    const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: "a4" });
-    const w = pdf.internal.pageSize.getWidth();
-    pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, w, (canvas.height * w) / canvas.width);
-    pdf.save(`audit-${id}.pdf`);
+  function exportPDF() {
+    window.print();
   }
 
   if (loading) return (
     <Layout>
-      <div className="max-w-4xl space-y-5">
-        {[120, 80, 260, 200, 200].map((h, i) => <div key={i} className="skeleton rounded-xl" style={{ height: `${h}px` }} />)}
+      <div style={{ maxWidth: 896, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+        {[120, 80, 260, 200, 200].map((h, i) => <div key={i} className="skeleton" style={{ height: h, borderRadius: 12 }} />)}
       </div>
     </Layout>
   );
 
   if (!report) return (
     <Layout>
-      <div className="max-w-lg mx-auto pt-10 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-          <AlertCircle size={28} className="text-slate-400" />
+      <div style={{ maxWidth: 450, margin: "40px auto 0", textAlign: "center" }}>
+        <div style={{ width: 64, height: 64, borderRadius: 16, background: "var(--bg-surface-hover)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+          <AlertCircle size={28} color="var(--text-muted)" />
         </div>
-        <h2 className="text-lg font-semibold text-slate-800 mb-2">Report Not Found</h2>
-        <p className="text-sm text-slate-500 mb-5">This audit report may have been deleted or doesn't exist.</p>
-        <button onClick={() => navigate("/reports")} className="px-4 py-2.5 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition-colors" style={{ fontFamily: "inherit" }}>
-          Back to Reports
-        </button>
+        <h2 style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)", marginBottom: 8 }}>Report Not Found</h2>
+        <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 20 }}>This audit report may have been deleted or doesn't exist.</p>
+        <button onClick={() => navigate("/reports")} className="btn btn-primary" style={{ padding: "10px 16px" }}>Back to Reports</button>
       </div>
     </Layout>
   );
@@ -170,62 +180,58 @@ export default function Report() {
 
   return (
     <Layout>
-      <div ref={reportRef} className="max-w-4xl space-y-6">
+      <div ref={reportRef} style={{ maxWidth: 896, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24, paddingBottom: 40 }}>
         {/* Header */}
-        <div className="bg-white border border-slate-200 rounded-xl p-6 flex items-start justify-between gap-4">
+        <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 24, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16 }}>
           <div>
-            <button onClick={() => navigate("/reports")} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 mb-3 transition-colors" style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
+            <button onClick={() => navigate("/reports")} className="no-print" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", marginBottom: 12 }}>
               <ArrowLeft size={13} /> Back to Reports
             </button>
-            <h1 className="text-xl font-bold text-slate-900 mb-2">{report?.filename || "Audit Report"}</h1>
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-mono px-2 py-1 rounded bg-slate-100 text-slate-500 border border-slate-200">
+            <h1 style={{ fontSize: 20, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 8px 0" }}>{report?.filename || "Audit Report"}</h1>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ fontSize: 12, fontFamily: 'ui-monospace, monospace', padding: "4px 8px", borderRadius: 4, background: "var(--bg-surface-hover)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}>
                 ID: {(report.document || id).substring(0, 8)}…
               </span>
-              <span className="text-xs text-slate-400">{new Date(report.uploaded_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
+              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>{new Date(report.uploaded_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
             </div>
           </div>
-          <button
-            onClick={exportPDF}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors flex-shrink-0"
-            style={{ fontFamily: "inherit" }}
-          >
-            <Download size={15} /> Export PDF
+          <button onClick={exportPDF} className="btn btn-secondary no-print" style={{ flexShrink: 0 }}>
+            <Printer size={15} /> Export PDF
           </button>
         </div>
 
         {/* Summary Dashboard */}
-        <div className="grid grid-cols-4 gap-4">
-          <div className="col-span-4 md:col-span-1 bg-white border border-slate-200 rounded-xl p-5 flex flex-col items-center justify-center">
-            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-4">Risk Score</p>
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ flex: "1 1 200px", background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 20, display: "flex", flexDirection: "column", itemsCenter: "center", justifyContent: "center", minHeight: 180 }}>
+            <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 16, textAlign: "center" }}>Risk Score</p>
             <RiskGaugeSimple score={report.risk_score} />
           </div>
-          <div className="col-span-4 md:col-span-3 grid grid-cols-3 gap-4">
+          <div style={{ flex: "3 1 400px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
             {[
-              { label: "Rules Checked", value: report.rules_checked, color: "#6366F1", cls: "text-indigo-600 bg-indigo-50 border-indigo-100" },
-              { label: "Failures", value: report.results.filter((r) => r.status === "FAIL").length, color: "#EF4444", cls: "text-red-600 bg-red-50 border-red-100" },
-              { label: "Warnings", value: report.results.filter((r) => r.status === "WARN").length, color: "#F59E0B", cls: "text-amber-600 bg-amber-50 border-amber-100" },
-            ].map(({ label, value, cls }) => (
-              <div key={label} className="bg-white border border-slate-200 rounded-xl p-5">
-                <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-2">{label}</div>
-                <div className="text-4xl font-black text-slate-900">{value}</div>
+              { label: "Rules Checked", value: report.rules_checked },
+              { label: "Failures", value: report.results.filter((r) => r.status === "FAIL").length },
+              { label: "Warnings", value: report.results.filter((r) => r.status === "WARN").length },
+            ].map(({ label, value }) => (
+              <div key={label} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 12, padding: 20, display: "flex", flexDirection: "column" }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>{label}</div>
+                <div style={{ fontSize: 36, fontWeight: 900, color: "var(--text-primary)" }}>{value}</div>
               </div>
             ))}
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-2 pb-4 border-b border-slate-200 flex-wrap">
-          <FilterTab text="All Results" count={report.results.length} active={filter === "ALL"} onClick={() => setFilter("ALL")} color="#6366F1" />
-          <FilterTab text="Failures" count={report.results.filter((r) => r.status === "FAIL").length} active={filter === "FAIL"} onClick={() => setFilter("FAIL")} color="#EF4444" />
-          <FilterTab text="Warnings" count={report.results.filter((r) => r.status === "WARN").length} active={filter === "WARN"} onClick={() => setFilter("WARN")} color="#F59E0B" />
-          <FilterTab text="Passed" count={report.results.filter((r) => r.status === "PASS").length} active={filter === "PASS"} onClick={() => setFilter("PASS")} color="#10B981" />
+        <div style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 16, borderBottom: "1px solid var(--border)", flexWrap: "wrap" }}>
+          <FilterTab text="All Results" count={report.results.length} active={filter === "ALL"} onClick={() => setFilter("ALL")} colorStr="info" />
+          <FilterTab text="Failures" count={report.results.filter((r) => r.status === "FAIL").length} active={filter === "FAIL"} onClick={() => setFilter("FAIL")} colorStr="danger" />
+          <FilterTab text="Warnings" count={report.results.filter((r) => r.status === "WARN").length} active={filter === "WARN"} onClick={() => setFilter("WARN")} colorStr="warn" />
+          <FilterTab text="Passed" count={report.results.filter((r) => r.status === "PASS").length} active={filter === "PASS"} onClick={() => setFilter("PASS")} colorStr="success" />
         </div>
 
         {/* Rule Cards */}
         <div>
           {filteredResults.length === 0 ? (
-            <div className="text-center py-10 text-slate-400 text-sm">No rules match the selected filter.</div>
+            <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text-muted)", fontSize: 14 }}>No rules match the selected filter.</div>
           ) : (
             filteredResults.map((r) => <RuleCard key={r.rule_id} rule={r} />)
           )}

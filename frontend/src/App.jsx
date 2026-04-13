@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import useStore from "./utils/Store";
 import ProtectedRoute from "./components/layout/ProtectedRoute";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -11,6 +13,12 @@ import Profile from "./pages/Profile";
 import Pricing from "./pages/Pricing";
 
 export default function App() {
+  const theme = useStore((state) => state.theme);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme || "light");
+  }, [theme]);
+
   return (
     <BrowserRouter>
       <Routes>

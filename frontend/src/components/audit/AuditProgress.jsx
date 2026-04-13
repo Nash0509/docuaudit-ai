@@ -27,12 +27,12 @@ export default function AuditProgress({ onComplete }) {
   }, [onComplete]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', width: '100%', background: 'var(--bg-surface)' }}>
       <div style={{ position: 'relative', width: '80px', height: '80px', marginBottom: '24px' }}>
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-          style={{ position: 'absolute', inset: 0, border: '2px dashed var(--border-accent)', borderRadius: '50%', opacity: 0.5 }}
+          style={{ position: 'absolute', inset: 0, border: '2px dashed var(--accent)', borderRadius: '50%', opacity: 0.2 }}
         />
         <motion.div
           animate={{ rotate: -360 }}
@@ -54,7 +54,7 @@ export default function AuditProgress({ onComplete }) {
           const isDone = step > idx;
           const isPending = step < idx;
 
-          let color = "var(--text-secondary)";
+          let color = "var(--text-muted)";
           if (isActive) color = "var(--text-primary)";
           if (isDone) color = "var(--success)";
 
@@ -68,10 +68,16 @@ export default function AuditProgress({ onComplete }) {
               <div style={{ 
                 width: '32px', height: '32px', borderRadius: '50%', 
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: isDone ? "var(--success-dim)" : isActive ? "var(--bg-surface-hover)" : "transparent",
-                border: `1px solid ${isDone ? "rgba(34,197,94,0.2)" : isActive ? "var(--border)" : "transparent"}`
+                background: isDone ? "var(--success-light)" : isActive ? "var(--accent-light)" : "transparent",
+                border: `1px solid ${isDone ? "var(--success-border)" : isActive ? "var(--border-accent)" : "transparent"}`
               }}>
-                {isDone ? <CheckCircle2 size={16} color="var(--success)" /> : isActive ? <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 10px var(--accent)' }} /> : <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--text-muted)' }} />}
+                {isDone ? (
+                  <CheckCircle2 size={16} color="var(--success)" />
+                ) : isActive ? (
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 10px var(--accent)' }} />
+                ) : (
+                  <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--border)' }} />
+                )}
               </div>
               <div style={{ fontSize: '14px', fontWeight: isActive ? '600' : '500', color, transition: 'all 0.3s' }}>
                 {s.title}

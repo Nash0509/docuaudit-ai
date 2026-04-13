@@ -41,14 +41,15 @@ export default function Select({ value, onChange, options, label, placeholder = 
           padding: '0 14px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: 'var(--bg-surface)',
-          border: `1px solid ${isOpen ? 'var(--border-accent)' : 'var(--border)'}`,
+          border: `1px solid ${isOpen ? 'var(--accent)' : 'var(--border)'}`,
           borderRadius: 'var(--radius-md)',
           color: selectedOption ? 'var(--text-primary)' : 'var(--text-muted)',
           fontSize: '14px',
           cursor: 'pointer',
           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          boxShadow: isOpen ? '0 0 0 2px rgba(0, 212, 170, 0.1)' : 'none',
-          outline: 'none'
+          boxShadow: isOpen ? '0 0 0 3px var(--accent-light)' : 'none',
+          outline: 'none',
+          fontFamily: 'inherit'
         }}
       >
         <span style={{ fontWeight: selectedOption ? '500' : '400' }}>
@@ -82,13 +83,11 @@ export default function Select({ value, onChange, options, label, placeholder = 
               top: 'calc(100% + 6px)',
               left: 0,
               right: 0,
-              background: 'rgba(15, 23, 42, 0.98)',
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              borderRadius: '12px',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-lg)',
               padding: '6px',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)',
+              boxShadow: 'var(--shadow-elevated)',
               zIndex: 1000,
               maxHeight: '260px',
               overflowY: 'auto',
@@ -111,23 +110,28 @@ export default function Select({ value, onChange, options, label, placeholder = 
                   width: '100%',
                   padding: '10px 12px',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  background: isSelected ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+                  background: isSelected ? 'var(--accent-light)' : 'transparent',
                   border: 'none',
                   borderRadius: '8px',
-                  color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
+                  color: isSelected ? 'var(--accent)' : 'var(--text-secondary)',
                   fontSize: '13px',
                   fontWeight: isSelected ? '600' : '500',
                   cursor: 'pointer',
                   textAlign: 'left',
-                  transition: 'all 0.15s ease'
+                  transition: 'all 0.15s ease',
+                  fontFamily: 'inherit'
                 }}
                 onMouseEnter={(e) => { 
-                    if (!isSelected) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                    e.currentTarget.style.color = 'var(--text-primary)';
+                    if (!isSelected) {
+                      e.currentTarget.style.background = 'var(--bg-surface-hover)';
+                      e.currentTarget.style.color = 'var(--text-primary)';
+                    }
                 }}
                 onMouseLeave={(e) => { 
-                    if (!isSelected) e.currentTarget.style.background = 'transparent'; 
-                    e.currentTarget.style.color = isSelected ? 'var(--text-primary)' : 'var(--text-secondary)';
+                    if (!isSelected) {
+                      e.currentTarget.style.background = 'transparent'; 
+                      e.currentTarget.style.color = 'var(--text-secondary)';
+                    }
                 }}
               >
                 {opt.label}

@@ -9,41 +9,48 @@ import useMediaQuery from "../utils/useMediaQuery";
 
 function RiskBadge({ score }) {
   const cfg = score >= 70
-    ? { cls: "bg-red-50 text-red-700 border-red-200", label: "High" }
+    ? { bg: "var(--danger-light)", text: "var(--danger)", border: "var(--danger-border)", dot: "var(--danger)", label: "High" }
     : score >= 40
-      ? { cls: "bg-amber-50 text-amber-700 border-amber-200", label: "Medium" }
-      : { cls: "bg-emerald-50 text-emerald-700 border-emerald-200", label: "Low" };
+      ? { bg: "var(--warn-light)", text: "var(--warn)", border: "var(--warn-border)", dot: "var(--warn)", label: "Medium" }
+      : { bg: "var(--success-light)", text: "var(--success)", border: "var(--success-border)", dot: "var(--success)", label: "Low" };
+      
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.cls}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${score >= 70 ? "bg-red-500" : score >= 40 ? "bg-amber-400" : "bg-emerald-500"}`} />
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: cfg.bg, color: cfg.text, border: `1px solid ${cfg.border}` }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: cfg.dot }} />
       {cfg.label} · {score}
     </span>
   );
 }
 
 function ReportRow({ report, navigate }) {
+  const [hover, setHover] = useState(false);
   return (
     <div
       onClick={() => navigate(`/report/${report.document}`)}
-      className="grid items-center gap-4 px-5 py-4 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors group"
-      style={{ gridTemplateColumns: "2.5fr 1fr 1fr 1fr" }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: "grid", gridTemplateColumns: "2.5fr 1fr 1fr 1fr", alignItems: "center", gap: 16,
+        padding: "16px 20px", borderBottom: `1px solid var(--border)`, cursor: "pointer",
+        background: hover ? "var(--bg-surface-hover)" : "var(--bg-surface)", transition: "background 0.2s"
+      }}
     >
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
-          <FileText size={15} className="text-indigo-500" />
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 8, background: "var(--info-light)", border: "1px solid var(--info-border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <FileText size={15} color="var(--info)" />
         </div>
         <div>
-          <div className="text-sm font-medium text-slate-800 leading-tight">{report.filename || "Contract"}</div>
-          <div className="text-xs text-slate-400 font-mono mt-0.5">{report.document.substring(0, 8)}…</div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)", lineHeight: 1.2 }}>{report.filename || "Contract"}</div>
+          <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', marginTop: 2 }}>{report.document.substring(0, 8)}…</div>
         </div>
       </div>
       <RiskBadge score={report.risk_score} />
-      <div className="text-sm text-slate-600 font-medium">{report.rules_checked ?? "—"}</div>
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-slate-400">
+      <div style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 500 }}>{report.rules_checked ?? "—"}</div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
           {report.uploaded_at ? new Date(report.uploaded_at).toLocaleDateString() : "Recently"}
         </span>
-        <ChevronRight size={14} className="text-slate-300 group-hover:text-slate-500 transition-colors" />
+        <ChevronRight size={14} color={hover ? "var(--text-secondary)" : "var(--text-muted)"} style={{ transition: "color 0.2s" }} />
       </div>
     </div>
   );
@@ -51,8 +58,15 @@ function ReportRow({ report, navigate }) {
 
 function SkeletonRow() {
   return (
-    <div className="grid gap-4 px-5 py-4 border-b border-slate-100" style={{ gridTemplateColumns: "2.5fr 1fr 1fr 1fr" }}>
-      {[80, 48, 36, 64].map((w, i) => <div key={i} className={`skeleton h-5 rounded`} style={{ width: `${w}%` }} />)}
+    <div style={{ display: "grid", gridTemplateColumns: "2.5fr 1fr 1fr 1fr", gap: 16, padding: "16px 20px", borderBottom: `1px solid var(--border)` }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="skeleton" style={{ width: 36, height: 36, borderRadius: 8 }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <div className="skeleton" style={{ height: 14, width: 128, borderRadius: 4 }} />
+          <div className="skeleton" style={{ height: 10, width: 80, borderRadius: 4 }} />
+        </div>
+      </div>
+      {[1, 2, 3].map((i) => <div key={i} className="skeleton" style={{ height: 24, width: 80, borderRadius: 12 }} />)}
     </div>
   );
 }
@@ -81,73 +95,65 @@ export default function Reports() {
   const avgScore = totalAudits > 0 ? Math.round(reports.reduce((a, r) => a + r.risk_score, 0) / totalAudits) : 0;
 
   const statCards = [
-    { icon: Activity, label: "Total Audits", value: totalAudits, color: "#6366F1", bg: "bg-indigo-50", border: "border-indigo-100", text: "text-indigo-600" },
-    { icon: ShieldAlert, label: "High Risk", value: highRisk, color: "#EF4444", bg: "bg-red-50", border: "border-red-100", text: "text-red-600" },
-    { icon: ShieldCheck, label: "Low Risk", value: lowRisk, color: "#10B981", bg: "bg-emerald-50", border: "border-emerald-100", text: "text-emerald-600" },
-    { icon: BarChart3, label: "Avg. Score", value: `${avgScore}%`, color: "#6366F1", bg: "bg-indigo-50", border: "border-indigo-100", text: "text-indigo-600" },
+    { icon: Activity, label: "Total Audits", value: totalAudits, color: "var(--info)", bg: "var(--info-light)", border: "var(--info-border)" },
+    { icon: ShieldAlert, label: "High Risk", value: highRisk, color: "var(--danger)", bg: "var(--danger-light)", border: "var(--danger-border)" },
+    { icon: ShieldCheck, label: "Low Risk", value: lowRisk, color: "var(--success)", bg: "var(--success-light)", border: "var(--success-border)" },
+    { icon: BarChart3, label: "Avg. Score", value: `${avgScore}%`, color: "var(--warn)", bg: "var(--warn-light)", border: "var(--warn-border)" },
   ];
 
   return (
     <Layout>
-      <div className="max-w-5xl space-y-6">
+      <div style={{ maxWidth: 1024, margin: "0 auto", paddingBottom: 40, display: "flex", flexDirection: "column", gap: 24 }}>
         {/* Page Header */}
-        <div className="flex items-start justify-between">
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <BarChart3 size={18} className="text-indigo-500" />
-              <h1 className="text-lg font-bold text-slate-900">Audit Reports</h1>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <BarChart3 size={18} color="var(--info)" />
+              <h1 className="page-title">Audit Reports</h1>
             </div>
-            <p className="text-sm text-slate-500">AI-generated compliance findings for your documents.</p>
+            <p className="page-sub">AI-generated compliance findings for your documents.</p>
           </div>
         </div>
 
         {/* Stat Cards */}
-        <div className={`grid gap-4 ${isMobile ? "grid-cols-2" : "grid-cols-4"}`}>
-          {statCards.map(({ icon: Icon, label, value, bg, border, text }, i) => (
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 16 }}>
+          {statCards.map(({ icon: Icon, label, value, color, bg, border }, i) => (
             <motion.div
               key={label}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.07 }}
-              className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-sm hover:border-slate-300 transition-all"
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}
+              className="card" style={{ padding: "20px" }}
             >
-              <div className={`w-9 h-9 rounded-lg ${bg} border ${border} flex items-center justify-center mb-3`}>
-                <Icon size={16} className={text} />
+              <div style={{ width: 36, height: 36, borderRadius: 8, background: bg, border: `1px solid ${border}`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                <Icon size={16} color={color} />
               </div>
-              <div className="text-2xl font-bold text-slate-900 mb-1">{value}</div>
-              <div className="text-xs font-medium text-slate-400 uppercase tracking-wide">{label}</div>
+              <div style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>{value}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</div>
             </motion.div>
           ))}
         </div>
 
         {/* Reports Table */}
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+        <div className="card" style={{ padding: 0 }}>
           {/* Column Header */}
-          <div className="grid gap-4 px-5 py-3 border-b border-slate-200 bg-slate-50 text-[11px] font-semibold text-slate-400 uppercase tracking-wider" style={{ gridTemplateColumns: "2.5fr 1fr 1fr 1fr" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2.5fr 1fr 1fr 1fr", padding: "12px 20px", background: "var(--bg-surface-hover)", borderBottom: `1px solid var(--border)`, borderTopLeftRadius: 12, borderTopRightRadius: 12, fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
             <div>Document</div>
             <div>Risk Score</div>
             <div>Rules Run</div>
             <div>Audit Date</div>
           </div>
 
-          <div className="overflow-x-auto">
-            <div style={{ minWidth: "640px" }}>
+          <div style={{ overflowX: "auto" }}>
+            <div style={{ minWidth: 640 }}>
               {loading ? (
-                [...Array(5)].map((_, i) => <SkeletonRow key={i} />)
+                [...Array(4)].map((_, i) => <SkeletonRow key={i} />)
               ) : reports.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mb-4">
-                    <FolderOpen size={24} className="text-slate-400" />
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "64px 24px", textAlign: "center" }}>
+                  <div style={{ width: 56, height: 56, borderRadius: 16, background: "var(--bg-surface-hover)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                    <FolderOpen size={24} color="var(--text-muted)" />
                   </div>
-                  <h3 className="text-sm font-semibold text-slate-700 mb-1">No reports yet</h3>
-                  <p className="text-xs text-slate-400 max-w-xs">Upload a document and run an audit to see your compliance reports here.</p>
-                  <button
-                    onClick={() => navigate("/documents")}
-                    className="mt-4 px-4 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-                    style={{ fontFamily: "inherit" }}
-                  >
-                    Go to Documents
-                  </button>
+                  <h3 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>No reports yet</h3>
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", maxWidth: 320 }}>Upload a document and run an audit to see your compliance reports here.</p>
+                  <button onClick={() => navigate("/documents")} className="btn btn-secondary" style={{ marginTop: 24 }}>Go to Documents</button>
                 </div>
               ) : (
                 reports.map((report) => <ReportRow key={report.document} report={report} navigate={navigate} />)

@@ -19,10 +19,10 @@ function formatSmartTime(dateString) {
 }
 
 const TYPE_CFG = {
-  SUCCESS: { color: '#10B981', bg: 'bg-emerald-50', border: 'border-emerald-200', icon: <CheckCircle2 size={15} /> },
-  WARNING: { color: '#F59E0B', bg: 'bg-amber-50', border: 'border-amber-200', icon: <AlertTriangle size={15} /> },
-  CRITICAL: { color: '#EF4444', bg: 'bg-red-50', border: 'border-red-200', icon: <BellRing size={15} /> },
-  INFO: { color: '#6366F1', bg: 'bg-indigo-50', border: 'border-indigo-200', icon: <Info size={15} /> },
+  SUCCESS: { color: 'var(--success)', bg: 'var(--success-light)', border: 'var(--success-border)', icon: <CheckCircle2 size={15} /> },
+  WARNING: { color: 'var(--warn)', bg: 'var(--warn-light)', border: 'var(--warn-border)', icon: <AlertTriangle size={15} /> },
+  CRITICAL: { color: 'var(--danger)', bg: 'var(--danger-light)', border: 'var(--danger-border)', icon: <BellRing size={15} /> },
+  INFO: { color: 'var(--info)', bg: 'var(--info-light)', border: 'var(--info-border)', icon: <Info size={15} /> },
 };
 
 export default function NotificationItem({ notification, onRead }) {
@@ -51,32 +51,31 @@ export default function NotificationItem({ notification, onRead }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={handleClick}
-      className={`
-        relative flex gap-3 px-5 py-3.5 cursor-pointer transition-colors
-        ${notification.is_read
-          ? hovered ? 'bg-slate-50' : 'bg-white'
-          : hovered ? 'bg-indigo-50/70' : 'bg-indigo-50/40'
-        }
-        ${!notification.is_read ? 'border-l-2 border-indigo-400' : 'border-l-2 border-transparent'}
-      `}
+      style={{
+        position: "relative", display: "flex", gap: 12, padding: "14px 20px", cursor: "pointer", transition: "all 0.2s",
+        background: notification.is_read ? (hovered ? "var(--bg-surface-hover)" : "var(--bg-surface)") : (hovered ? "var(--info-light)" : "var(--bg-surface)"),
+        borderLeft: `2px solid ${notification.is_read ? "transparent" : "var(--info)"}`
+      }}
     >
       {/* Icon */}
       <div
-        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border ${cfg.bg} ${cfg.border}`}
-        style={{ color: cfg.color, opacity: notification.is_read ? 0.6 : 1 }}
+        style={{
+          width: 32, height: 32, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+          background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color, opacity: notification.is_read ? 0.6 : 1
+        }}
       >
         {cfg.icon}
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0 pr-6">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <span className={`text-xs leading-snug truncate ${notification.is_read ? 'font-medium text-slate-500' : 'font-semibold text-slate-800'}`}>
+      <div style={{ flex: 1, minWidth: 0, paddingRight: 24 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+          <span style={{ fontSize: 12, fontWeight: notification.is_read ? 500 : 600, color: notification.is_read ? "var(--text-muted)" : "var(--text-primary)", lineHeight: 1.4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {notification.title}
           </span>
-          <span className="text-[10px] text-slate-400 flex-shrink-0">{formatSmartTime(notification.created_at)}</span>
+          <span style={{ fontSize: 10, color: "var(--text-muted)", flexShrink: 0 }}>{formatSmartTime(notification.created_at)}</span>
         </div>
-        <p className={`text-xs leading-relaxed ${notification.is_read ? 'text-slate-400' : 'text-slate-500'}`}>
+        <p style={{ fontSize: 12, color: notification.is_read ? "var(--text-muted)" : "var(--text-secondary)", lineHeight: 1.5, margin: 0 }}>
           {notification.message}
         </p>
       </div>
@@ -90,8 +89,13 @@ export default function NotificationItem({ notification, onRead }) {
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={(e) => { e.stopPropagation(); onRead(notification.id); }}
             title="Mark as read"
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg border border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 flex items-center justify-center transition-all shadow-sm"
-            style={{ fontFamily: 'inherit' }}
+            style={{
+              position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", width: 28, height: 28, borderRadius: 8,
+              border: "1px solid var(--border)", background: "var(--bg-surface)", display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", transition: "all 0.2s", color: "var(--text-muted)", padding: 0
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--info-border)"; e.currentTarget.style.background = "var(--info-light)"; e.currentTarget.style.color = "var(--info)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.background = "var(--bg-surface)"; e.currentTarget.style.color = "var(--text-muted)"; }}
           >
             <CheckSquare size={13} />
           </motion.button>

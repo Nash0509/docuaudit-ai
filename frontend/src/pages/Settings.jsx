@@ -12,53 +12,46 @@ function Section({ title, description, children, index = 0 }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08 }}
-      className="bg-white border border-slate-200 rounded-xl overflow-hidden mb-5 shadow-sm"
+      className="card" style={{ padding: 0, marginBottom: 20, overflow: "hidden" }}
     >
-      <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
-        <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
-        <p className="text-xs text-slate-400 mt-0.5">{description}</p>
+      <div style={{ padding: "16px 24px", borderBottom: `1px solid var(--border)`, background: "var(--bg-surface-hover)" }}>
+        <h3 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", margin: 0 }}>{title}</h3>
+        <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2, margin: "2px 0 0 0" }}>{description}</p>
       </div>
-      <div className="px-6 py-5 space-y-5">{children}</div>
+      <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 20 }}>{children}</div>
     </motion.div>
   );
 }
 
 function Field({ label, description, children }) {
   return (
-    <div className="flex items-start justify-between gap-6">
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-slate-700">{label}</div>
-        {description && <div className="text-xs text-slate-400 mt-0.5 leading-relaxed">{description}</div>}
+    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 500, color: "var(--text-primary)" }}>{label}</div>
+        {description && <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2, lineHeight: 1.5 }}>{description}</div>}
       </div>
-      <div className="flex-shrink-0">{children}</div>
+      <div style={{ flexShrink: 0 }}>{children}</div>
     </div>
   );
 }
 
 function Toggle({ text, description, checked, onChange }) {
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0">
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: 12, borderBottom: `1px solid var(--border)` }}>
       <div>
-        <div className="text-sm text-slate-700">{text}</div>
-        {description && <div className="text-xs text-slate-400 mt-0.5">{description}</div>}
+        <div style={{ fontSize: 14, color: "var(--text-primary)" }}>{text}</div>
+        {description && <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{description}</div>}
       </div>
       <button
         onClick={onChange}
-        className={`relative w-10 h-5.5 rounded-full transition-colors flex-shrink-0 border-0 cursor-pointer`}
         style={{
-          width: "40px",
-          height: "22px",
-          borderRadius: "11px",
-          background: checked ? "#6366F1" : "#CBD5E1",
-          transition: "background 0.2s",
-          border: "none",
-          padding: 0,
+          width: 40, height: 22, borderRadius: 11, background: checked ? "var(--accent)" : "var(--border-disabled)",
+          transition: "background 0.2s", border: "none", padding: 0, position: "relative", cursor: "pointer", flexShrink: 0
         }}
       >
         <div style={{
-          width: "16px", height: "16px", borderRadius: "50%", background: "#fff",
-          position: "absolute", top: "3px", left: checked ? "21px" : "3px",
-          transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)"
+          width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 3,
+          left: checked ? 21 : 3, transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)"
         }} />
       </button>
     </div>
@@ -70,8 +63,8 @@ function SettingsSelect({ value, onChange, options }) {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-9 px-3 rounded-lg border border-slate-200 text-sm text-slate-700 bg-white hover:border-slate-300 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-50 outline-none transition-all min-w-[160px]"
-      style={{ fontFamily: "inherit" }}
+      className="input"
+      style={{ minWidth: 160, padding: "8px 12px", height: 36 }}
     >
       {options.map((o) => (
         <option key={o.value} value={o.value}>{o.label}</option>
@@ -142,32 +135,32 @@ export default function Settings() {
 
   if (loading) return (
     <Layout>
-      <div className="flex items-center justify-center h-64 gap-3 text-slate-400">
-        <Loader2 size={18} className="animate-spin text-indigo-500" />
-        <span className="text-sm">Loading settings...</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 256, gap: 12, color: "var(--text-muted)" }}>
+        <Loader2 size={18} style={{ animation: "spin 1s linear infinite", color: "var(--accent)" }} />
+        <span style={{ fontSize: 14 }}>Loading settings...</span>
       </div>
     </Layout>
   );
 
   return (
     <Layout>
-      <div className="max-w-2xl">
+      <div style={{ maxWidth: 672, margin: "0 auto", paddingBottom: 40 }}>
         {/* Header */}
-        <div className="flex items-start justify-between mb-7">
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28 }}>
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <SettingsIcon size={18} className="text-indigo-500" />
-              <h1 className="text-lg font-bold text-slate-900">Settings</h1>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <SettingsIcon size={18} color="var(--accent)" />
+              <h1 className="page-title">Settings</h1>
             </div>
-            <p className="text-sm text-slate-500">Manage your system and audit preferences.</p>
+            <p className="page-sub">Manage your system and audit preferences.</p>
           </div>
           <button
             onClick={handleSave}
             disabled={saving}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm ${saved ? "bg-emerald-600 text-white" : "bg-indigo-600 hover:bg-indigo-700 text-white"} disabled:opacity-60`}
-            style={{ fontFamily: "inherit" }}
+            className="btn"
+            style={{ padding: "10px 16px", background: saved ? "var(--success)" : "var(--accent)", color: "#fff", opacity: saving ? 0.6 : 1 }}
           >
-            {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {saving ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Save size={14} />}
             {saved ? "Saved!" : saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
@@ -175,41 +168,31 @@ export default function Settings() {
         {/* Account */}
         <Section title="Account" description="Manage your login and user details" index={0}>
           <Field label="Email Address" description="The email bound to your account">
-            <div className="px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-600 font-medium min-w-[200px]">
+            <div style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-surface-hover)", fontSize: 14, color: "var(--text-secondary)", fontWeight: 500, minWidth: 200 }}>
               {userEmail || "Loading..."}
             </div>
           </Field>
           <Field label="Password" description="Update your login credentials">
-            <div className="flex items-center gap-3">
-              <div className="px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-sm text-slate-400 tracking-widest min-w-[120px]">
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--bg-surface-hover)", fontSize: 14, color: "var(--text-muted)", letterSpacing: "0.1em", minWidth: 120 }}>
                 ••••••••
               </div>
-              <button
-                onClick={handlePasswordChange}
-                className="px-3 py-2 rounded-lg border border-slate-200 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                style={{ fontFamily: "inherit" }}
-              >
-                Change
-              </button>
+              <button onClick={handlePasswordChange} className="btn btn-secondary">Change</button>
             </div>
           </Field>
           <Field label="Subscription Plan" description="Your current billing tier">
-            <div className="flex items-center gap-3">
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               {storeUser?.is_subscribed ? (
-                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-xs font-bold text-indigo-700">
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 20, background: "var(--info-light)", border: "1px solid var(--info-border)", fontSize: 12, fontWeight: 700, color: "var(--info)" }}>
                   <Shield size={12} /> Pro · Unlimited
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold text-amber-700">
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 20, background: "var(--warn-light)", border: "1px solid var(--warn-border)", fontSize: 12, fontWeight: 700, color: "var(--warn)" }}>
                   Free · 1 Audit
                 </span>
               )}
               {!storeUser?.is_subscribed && (
-                <button
-                  onClick={() => navigate("/pricing")}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition-colors"
-                  style={{ fontFamily: "inherit" }}
-                >
+                <button onClick={() => navigate("/pricing")} className="btn btn-primary btn-sm">
                   <Zap size={11} /> Upgrade
                 </button>
               )}
@@ -227,14 +210,13 @@ export default function Settings() {
             />
           </Field>
           <Field label="Confidence Threshold" description={`Minimum AI confidence to flag a failure (${confidence}%)`}>
-            <div className="flex items-center gap-3">
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <input
                 type="range" min="50" max="95" value={confidence}
                 onChange={(e) => setConfidence(e.target.value)}
-                className="w-40 cursor-pointer"
-                style={{ accentColor: "#6366F1" }}
+                style={{ width: 160, cursor: "pointer", accentColor: "var(--accent)" }}
               />
-              <span className="text-sm font-bold text-slate-700 w-10 text-right">{confidence}%</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", width: 40, textAlign: "right" }}>{confidence}%</span>
             </div>
           </Field>
         </Section>

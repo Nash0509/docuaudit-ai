@@ -2,11 +2,11 @@ import { motion } from "framer-motion";
 
 const variants = {
   primary: {
-    background: "linear-gradient(135deg, #00d4aa, #2563eb)",
-    color: "#020617",
+    background: "var(--accent)",
+    color: "#fff",
     border: "none",
     fontWeight: "600",
-    boxShadow: "0 4px 14px rgba(0, 212, 170, 0.25)",
+    boxShadow: "0 2px 8px var(--accent-light)",
   },
   secondary: {
     background: "var(--bg-surface)",
@@ -23,16 +23,16 @@ const variants = {
     boxShadow: "none",
   },
   danger: {
-    background: "var(--danger-dim)",
+    background: "var(--danger-light)",
     color: "var(--danger)",
-    border: "1px solid rgba(239, 68, 68, 0.2)",
+    border: "1px solid var(--danger-border)",
     fontWeight: "500",
     boxShadow: "none",
   },
   accent: {
-    background: "var(--accent-dim)",
-    color: "var(--accent)",
-    border: "1px solid var(--border-accent)",
+    background: "var(--info-light)",
+    color: "var(--info)",
+    border: "1px solid var(--info-border)",
     fontWeight: "500",
     boxShadow: "none",
   },

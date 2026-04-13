@@ -82,7 +82,7 @@ export default function RuleSelector({ rules, selectedRuleIds, onSelectionChange
   };
 
   return (
-    <div style={{ display: "flex", height: "460px", borderTop: "1px solid var(--border)", margin: "16px 0 0" }}>
+    <div style={{ display: "flex", height: "460px", borderTop: "1px solid var(--border)", margin: "0" }}>
       
       {/* Left Sidebar: Category Filter */}
       <div style={{
@@ -93,9 +93,10 @@ export default function RuleSelector({ rules, selectedRuleIds, onSelectionChange
         display: "flex",
         flexDirection: "column",
         gap: "6px",
-        overflowY: "auto"
+        overflowY: "auto",
+        background: "var(--bg-surface)"
       }}>
-        <div style={{ fontSize: "10px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>
+        <div style={{ fontSize: "10px", fontWeight: "600", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px", paddingLeft: "4px" }}>
           Filter by Category
         </div>
         {categories.map(cat => (
@@ -104,9 +105,9 @@ export default function RuleSelector({ rules, selectedRuleIds, onSelectionChange
             onClick={() => setActiveCategory(cat)}
             style={{
               textAlign: "left",
-              background: activeCategory === cat ? "var(--accent-dim)" : "transparent",
+              background: activeCategory === cat ? "var(--accent-light)" : "transparent",
               color: activeCategory === cat ? "var(--accent)" : "var(--text-muted)",
-              border: `1px solid ${activeCategory === cat ? "var(--border-accent)" : "transparent"}`,
+              border: `1px solid ${activeCategory === cat ? "var(--accent)" : "transparent"}`,
               padding: "7px 10px",
               borderRadius: "var(--radius-md)",
               cursor: "pointer",
@@ -122,7 +123,7 @@ export default function RuleSelector({ rules, selectedRuleIds, onSelectionChange
       </div>
 
       {/* Right: Rule List */}
-      <div style={{ flex: 1, padding: "16px 0 16px 20px", display: "flex", flexDirection: "column", minWidth: 0 }}>
+      <div style={{ flex: 1, padding: "16px 0 16px 20px", display: "flex", flexDirection: "column", minWidth: 0, background: "var(--bg-surface)" }}>
         
         {/* Search + Actions Row */}
         <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "16px" }}>

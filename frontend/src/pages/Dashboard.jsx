@@ -2,35 +2,42 @@ import { useEffect, useState } from "react";
 import useStore from "../utils/Store";
 import Layout from "../components/layout/Layout";
 import { motion } from "framer-motion";
-import {
-  FileText, ShieldCheck, AlertTriangle, BarChart3,
-  TrendingUp, Clock, ArrowUpRight, Brain, Zap
-} from "lucide-react";
+import { FileText, ShieldCheck, AlertTriangle, BarChart3, TrendingUp, Clock, ArrowUpRight, Brain, Zap } from "lucide-react";
 import { getDocuments, getAllAuditResult } from "../services/api";
 import ActivityTimeline from "../components/dashboard/ActivityTimeline";
 import useMediaQuery from "../utils/useMediaQuery";
 import { useNavigate } from "react-router-dom";
+
+const S = {
+  card: {
+    background: "var(--bg-surface)",
+    border: "1px solid var(--border)",
+    borderRadius: 12,
+    padding: "20px",
+    boxShadow: "var(--shadow-sm)",
+  },
+  sectionTitle: { fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: 8, marginBottom: 16 },
+  flexCenter: { display: "flex", alignItems: "center", justifyContent: "center" },
+  flexBetween: { display: "flex", alignItems: "center", justifyContent: "space-between" },
+};
 
 function StatCard({ icon: Icon, title, value, color, sub, index }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.07, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-md hover:border-slate-300 transition-all duration-200 group"
+      transition={{ delay: index * 0.07, duration: 0.4 }}
+      style={{ ...S.card, display: "flex", flexDirection: "column" }}
     >
-      <div className="flex items-start justify-between mb-4">
-        <div
-          className="w-9 h-9 rounded-lg flex items-center justify-center"
-          style={{ background: `${color}15` }}
-        >
-          <Icon size={17} style={{ color }} />
+      <div style={{ ...S.flexBetween, marginBottom: 16 }}>
+        <div style={{ width: 36, height: 36, borderRadius: 8, background: `${color}15`, ...S.flexCenter }}>
+          <Icon size={18} style={{ color }} />
         </div>
-        <ArrowUpRight size={14} className="text-slate-300 group-hover:text-slate-400 transition-colors" />
+        <ArrowUpRight size={14} color="var(--text-muted)" />
       </div>
-      <div className="text-2xl font-bold text-slate-900 mb-1">{value}</div>
-      <div className="text-sm font-medium text-slate-500">{title}</div>
-      {sub && <div className="text-xs text-slate-400 mt-0.5">{sub}</div>}
+      <div style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>{value}</div>
+      <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-muted)" }}>{title}</div>
+      {sub && <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>{sub}</div>}
     </motion.div>
   );
 }
@@ -38,22 +45,22 @@ function StatCard({ icon: Icon, title, value, color, sub, index }) {
 function RiskBar({ label, count, total, color }) {
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
   const colors = {
-    high: { bar: "bg-red-500", badge: "bg-red-50 text-red-600 border-red-100" },
-    medium: { bar: "bg-amber-400", badge: "bg-amber-50 text-amber-600 border-amber-100" },
-    low: { bar: "bg-emerald-500", badge: "bg-emerald-50 text-emerald-600 border-emerald-100" },
+    high: { bar: "var(--danger)", badge: { bg: "var(--danger-light)", color: "var(--danger)", border: "var(--danger-border)" } },
+    medium: { bar: "var(--warn)", badge: { bg: "var(--warn-light)", color: "var(--warn)", border: "var(--warn-border)" } },
+    low: { bar: "var(--success)", badge: { bg: "var(--success-light)", color: "var(--success)", border: "var(--success-border)" } },
   };
   return (
-    <div className="flex items-center gap-3">
-      <div className="w-20 text-xs font-medium text-slate-500 flex-shrink-0">{label}</div>
-      <div className="flex-1 h-1.5 rounded-full bg-slate-100">
+    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+      <div style={{ width: 80, fontSize: 12, fontWeight: 500, color: "var(--text-muted)", flexShrink: 0 }}>{label}</div>
+      <div style={{ flex: 1, height: 6, borderRadius: 3, background: "var(--bg-surface-hover)", position: "relative", overflow: "hidden" }}>
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-          className={`h-full rounded-full ${colors[color].bar}`}
+          style={{ position: "absolute", top: 0, left: 0, height: "100%", borderRadius: 3, background: colors[color].bar }}
         />
       </div>
-      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${colors[color].badge}`}>
+      <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 12, background: colors[color].badge.bg, color: colors[color].badge.color, border: `1px solid ${colors[color].badge.border}` }}>
         {count}
       </span>
     </div>
@@ -99,130 +106,108 @@ export default function Dashboard() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const username = user?.email?.split("@")[0] || "there";
-  const scoreColor = complianceScore >= 70 ? "#10B981" : complianceScore >= 40 ? "#F59E0B" : "#EF4444";
+  const scoreColor = complianceScore >= 70 ? "var(--success)" : complianceScore >= 40 ? "var(--warn)" : "var(--danger)";
 
   return (
     <Layout>
-      <div className="max-w-6xl space-y-6">
-
+      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24, paddingBottom: 40 }}>
         {/* Welcome Banner */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-white border border-slate-200 rounded-xl p-6 flex items-center justify-between"
+          style={{ ...S.card, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "24px 32px" }}
         >
           <div>
-            <p className="text-xs font-semibold text-indigo-500 uppercase tracking-widest mb-1">DocuAudit AI · Control Center</p>
-            <h1 className="text-xl font-bold text-slate-900">{greeting}, {username} 👋</h1>
-            <p className="text-sm text-slate-500 mt-1">
+            <p style={{ fontSize: 11, fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>
+              DocuAudit AI · Control Center
+            </p>
+            <h1 className="stat-number" style={{ fontSize: 24, marginBottom: 4 }}>{greeting}, {username} 👋</h1>
+            <p style={{ fontSize: 14, color: "var(--text-muted)", marginTop: 4 }}>
               {stats.highRisk > 0
-                ? <span>You have <span className="font-semibold text-red-500">{stats.highRisk} high-risk</span> document{stats.highRisk !== 1 ? "s" : ""} requiring review.</span>
+                ? <span>You have <span style={{ fontWeight: 600, color: "var(--danger)" }}>{stats.highRisk} high-risk</span> document{stats.highRisk !== 1 ? "s" : ""} requiring review.</span>
                 : "All documents are in compliance. Keep up the great work."
               }
             </p>
           </div>
-          <div className="flex-shrink-0 text-center hidden sm:block">
-            <div className="w-20 h-20 rounded-full border-2 flex flex-col items-center justify-center"
-              style={{ borderColor: `${scoreColor}40`, background: `${scoreColor}08` }}>
-              <div className="text-2xl font-black" style={{ color: scoreColor }}>{complianceScore}</div>
-              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Score</div>
+          {!isMobile && (
+            <div style={{ ...S.flexCenter, flexDirection: "column", width: 80, height: 80, borderRadius: "50%", border: `2px solid ${scoreColor}`, opacity: 0.8 }}>
+              <div style={{ fontSize: 28, fontWeight: 900, color: scoreColor, lineHeight: 1 }}>{complianceScore}</div>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginTop: 2 }}>Score</div>
             </div>
-          </div>
+          )}
         </motion.div>
 
         {/* Stat Cards */}
-        <div className={`grid gap-4 ${isMobile ? "grid-cols-2" : "grid-cols-4"}`}>
-          <StatCard icon={FileText} title="Total Documents" value={stats.total} color="#6366F1" sub="in your library" index={0} />
-          <StatCard icon={ShieldCheck} title="Audited" value={stats.audited} color="#10B981" sub="completed audits" index={1} />
-          <StatCard icon={AlertTriangle} title="High Risk" value={stats.highRisk} color="#EF4444" sub="need review" index={2} />
-          <StatCard icon={BarChart3} title="Avg. Risk Score" value={`${stats.avgRisk}%`} color="#F59E0B" sub="across all audits" index={3} />
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)", gap: 16 }}>
+          <StatCard icon={FileText} title="Total Documents" value={stats.total} color="var(--accent)" sub="in your library" index={0} />
+          <StatCard icon={ShieldCheck} title="Audited" value={stats.audited} color="var(--success)" sub="completed audits" index={1} />
+          <StatCard icon={AlertTriangle} title="High Risk" value={stats.highRisk} color="var(--danger)" sub="need review" index={2} />
+          <StatCard icon={BarChart3} title="Avg. Risk Score" value={`${stats.avgRisk}%`} color="var(--warn)" sub="across all audits" index={3} />
         </div>
 
         {/* Middle Row */}
-        <div className={`grid gap-5 ${isMobile ? "grid-cols-1" : "grid-cols-3"}`}>
-
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(3, 1fr)", gap: 20 }}>
           {/* Risk Distribution */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white border border-slate-200 rounded-xl p-5"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingUp size={15} className="text-indigo-500" />
-              <span className="text-sm font-semibold text-slate-700">Risk Distribution</span>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={S.card}>
+            <div style={S.sectionTitle}>
+              <TrendingUp size={16} color="var(--accent)" /> Risk Distribution
             </div>
-            <div className="space-y-3">
-              <RiskBar label="High Risk" count={riskData.high} total={riskData.high + riskData.medium + riskData.low} color="high" />
-              <RiskBar label="Medium" count={riskData.medium} total={riskData.high + riskData.medium + riskData.low} color="medium" />
-              <RiskBar label="Low Risk" count={riskData.low} total={riskData.high + riskData.medium + riskData.low} color="low" />
-            </div>
+            <RiskBar label="High Risk" count={riskData.high} total={riskData.high + riskData.medium + riskData.low} color="high" />
+            <RiskBar label="Medium" count={riskData.medium} total={riskData.high + riskData.medium + riskData.low} color="medium" />
+            <RiskBar label="Low Risk" count={riskData.low} total={riskData.high + riskData.medium + riskData.low} color="low" />
           </motion.div>
 
           {/* Quick Actions */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            className="bg-white border border-slate-200 rounded-xl p-5"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Zap size={15} className="text-indigo-500" />
-              <span className="text-sm font-semibold text-slate-700">Quick Actions</span>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} style={S.card}>
+            <div style={S.sectionTitle}>
+              <Zap size={16} color="var(--accent)" /> Quick Actions
             </div>
-            <div className="space-y-2">
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[
-                { label: "Upload Document", sub: "Add a new contract", path: "/documents", color: "indigo" },
-                { label: "Run Audit", sub: "Start compliance check", path: "/documents", color: "amber" },
-                { label: "View Reports", sub: "Review findings", path: "/reports", color: "emerald" },
-              ].map(({ label, sub, path, color }) => (
+                { label: "Upload Document", sub: "Add a new contract", path: "/documents", color: "var(--accent)", bg: "var(--accent-light)", border: "var(--border-accent)" },
+                { label: "Run Audit", sub: "Start compliance check", path: "/documents", color: "var(--warn)", bg: "var(--warn-light)", border: "var(--warn-border)" },
+                { label: "View Reports", sub: "Review findings", path: "/reports", color: "var(--success)", bg: "var(--success-light)", border: "var(--success-border)" },
+              ].map(({ label, sub, path, color, bg, border }) => (
                 <button
                   key={label}
                   onClick={() => navigate(path)}
-                  className={`
-                    w-full flex items-center justify-between px-3.5 py-3 rounded-lg border text-left
-                    transition-all duration-150 hover:shadow-sm
-                    ${color === "indigo" ? "border-indigo-100 bg-indigo-50 hover:bg-indigo-100" :
-                      color === "amber" ? "border-amber-100 bg-amber-50 hover:bg-amber-100" :
-                      "border-emerald-100 bg-emerald-50 hover:bg-emerald-100"}
-                  `}
-                  style={{ fontFamily: "inherit" }}
+                  style={{
+                    width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "12px 14px", borderRadius: 10, background: bg, border: `1px solid ${border}`,
+                    cursor: "pointer", textAlign: "left", transition: "all 0.15s"
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(0.97)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.filter = "brightness(1)"; }}
                 >
                   <div>
-                    <div className={`text-sm font-semibold ${color === "indigo" ? "text-indigo-700" : color === "amber" ? "text-amber-700" : "text-emerald-700"}`}>{label}</div>
-                    <div className="text-xs text-slate-500 mt-0.5">{sub}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color }}>{label}</div>
+                    <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>{sub}</div>
                   </div>
-                  <ArrowUpRight size={14} className="text-slate-400" />
+                  <ArrowUpRight size={14} color="var(--text-muted)" />
                 </button>
               ))}
             </div>
           </motion.div>
 
           {/* AI Compliance Score */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white border border-slate-200 rounded-xl p-5"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Brain size={15} className="text-indigo-500" />
-              <span className="text-sm font-semibold text-slate-700">AI Health Score</span>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} style={S.card}>
+            <div style={S.sectionTitle}>
+              <Brain size={16} color="var(--accent)" /> AI Health Score
             </div>
-            <div className="flex flex-col items-center justify-center py-4">
-              <div
-                className="w-28 h-28 rounded-full border-4 flex flex-col items-center justify-center mb-3"
-                style={{ borderColor: `${scoreColor}30`, background: `${scoreColor}08` }}
-              >
-                <div className="text-4xl font-black" style={{ color: scoreColor }}>{complianceScore}</div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Score</div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16px 0" }}>
+              <div style={{
+                width: 110, height: 110, borderRadius: "50%", border: `4px solid ${scoreColor}`, opacity: 0.8,
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", marginBottom: 16
+              }}>
+                <div style={{ fontSize: 36, fontWeight: 900, color: scoreColor, lineHeight: 1 }}>{complianceScore}</div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 4 }}>Score</div>
               </div>
-              <div className="text-center">
-                <div className="text-sm font-semibold text-slate-700">
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
                   {complianceScore >= 70 ? "Healthy" : complianceScore >= 40 ? "Moderate Risk" : "Action Required"}
                 </div>
-                <div className="text-xs text-slate-400 mt-1">
+                <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
                   {complianceScore >= 70 ? "Documents are largely compliant" : "Review flagged documents promptly"}
                 </div>
               </div>
@@ -231,19 +216,12 @@ export default function Dashboard() {
         </div>
 
         {/* Activity Timeline */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="bg-white border border-slate-200 rounded-xl p-5"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <Clock size={15} className="text-indigo-500" />
-            <span className="text-sm font-semibold text-slate-700">Recent Activity</span>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} style={S.card}>
+          <div style={S.sectionTitle}>
+            <Clock size={16} color="var(--accent)" /> Recent Activity
           </div>
           <ActivityTimeline />
         </motion.div>
-
       </div>
     </Layout>
   );

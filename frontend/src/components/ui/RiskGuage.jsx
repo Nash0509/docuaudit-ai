@@ -4,23 +4,24 @@ export default function RiskGauge({ score = 62 }) {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setProgress(score);
     }, 200);
+    return () => clearTimeout(timer);
   }, [score]);
 
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (progress / 100) * circumference;
 
-  let color = "#22c55e";
+  let colorToken = "var(--success)";
   let label = "Low Risk";
 
   if (score >= 70) {
-    color = "#ef4444";
+    colorToken = "var(--danger)";
     label = "High Risk";
   } else if (score >= 40) {
-    color = "#f59e0b";
+    colorToken = "var(--warn)";
     label = "Moderate Risk";
   }
 
@@ -40,7 +41,7 @@ export default function RiskGauge({ score = 62 }) {
           cx="65"
           cy="65"
           r={radius}
-          stroke="rgba(255,255,255,0.06)"
+          stroke="var(--bg-surface-hover)"
           strokeWidth="9"
           fill="none"
         />
@@ -49,7 +50,7 @@ export default function RiskGauge({ score = 62 }) {
           cx="65"
           cy="65"
           r={radius}
-          stroke={color}
+          stroke={colorToken}
           strokeWidth="9"
           fill="none"
           strokeLinecap="round"
@@ -75,7 +76,7 @@ export default function RiskGauge({ score = 62 }) {
           style={{
             fontSize: "22px",
             fontWeight: "700",
-            color: color,
+            color: colorToken,
             lineHeight: "1",
           }}
         >
@@ -85,7 +86,7 @@ export default function RiskGauge({ score = 62 }) {
         <div
           style={{
             fontSize: "11px",
-            color: "#64748b",
+            color: "var(--text-muted)",
             marginTop: "2px",
           }}
         >

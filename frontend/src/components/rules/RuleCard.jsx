@@ -1,10 +1,10 @@
-import { Edit, Trash2, Tag, Layers, Lock, MoreVertical } from "lucide-react";
+import { Edit, Trash2, Tag, Layers, Lock } from "lucide-react";
 import DropdownMenu from "../ui/DropdownMenu";
 
 const SEVERITY_CFG = {
-  HIGH: "bg-red-50 text-red-700 border-red-200",
-  MEDIUM: "bg-amber-50 text-amber-700 border-amber-200",
-  LOW: "bg-slate-100 text-slate-600 border-slate-200",
+  HIGH: { bg: "var(--danger-light)", text: "var(--danger)", border: "var(--danger-border)" },
+  MEDIUM: { bg: "var(--warn-light)", text: "var(--warn)", border: "var(--warn-border)" },
+  LOW: { bg: "var(--bg-surface-hover)", text: "var(--text-secondary)", border: "var(--border)" },
 };
 
 export default function RuleCard({ rule, onEdit, onDelete, isSystem }) {
@@ -12,44 +12,63 @@ export default function RuleCard({ rule, onEdit, onDelete, isSystem }) {
   const actions = [
     { label: "Edit Rule", icon: <Edit size={14} />, onClick: () => onEdit(rule) },
     { type: "divider" },
-    { label: "Delete Rule", icon: <Trash2 size={14} />, danger: true, onClick: () => onDelete(rule.id) },
+    { label: "Delete", icon: <Trash2 size={14} />, danger: true, onClick: () => onDelete(rule.id) },
   ];
+  
+  const sevCfg = SEVERITY_CFG[rule.severity] || SEVERITY_CFG.LOW;
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col h-full hover:border-slate-300 hover:shadow-sm transition-all duration-200 group">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <h3 className="text-sm font-semibold text-slate-800 leading-snug flex-1">{rule.name}</h3>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-semibold border ${SEVERITY_CFG[rule.severity] || SEVERITY_CFG.LOW}`}>
-            {rule.severity || "LOW"}
-          </span>
-          {!isTemplate && (
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-              <DropdownMenu items={actions} />
-            </div>
-          )}
+    <div
+      className="card"
+      style={{ padding: 20, display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between", position: "relative" }}
+      onMouseEnter={(e) => {
+        if (!isTemplate) {
+          const menu = e.currentTarget.querySelector('.rule-actions');
+          if (menu) menu.style.opacity = 1;
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isTemplate) {
+          const menu = e.currentTarget.querySelector('.rule-actions');
+          if (menu) menu.style.opacity = 0;
+        }
+      }}
+    >
+      <div>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
+          <h3 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", margin: 0, lineHeight: 1.4 }}>{rule.name}</h3>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            <span style={{ display: "inline-flex", padding: "2px 8px", borderRadius: 12, fontSize: 11, fontWeight: 600, background: sevCfg.bg, color: sevCfg.text, border: `1px solid ${sevCfg.border}` }}>
+              {rule.severity || "LOW"}
+            </span>
+          </div>
         </div>
+        <p style={{ fontSize: 13, color: "var(--text-muted)", lineHeight: 1.5, margin: "0 0 16px 0" }}>{rule.description}</p>
       </div>
 
-      <p className="text-sm text-slate-500 leading-relaxed flex-1 mb-4">{rule.description}</p>
-
-      {/* Footer Tags */}
-      <div className="flex items-center gap-3 flex-wrap pt-3 border-t border-slate-100">
-        {isTemplate && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase tracking-wide">
-            <Lock size={9} /> System
-          </span>
-        )}
-        {rule.category && (
-          <span className="inline-flex items-center gap-1 text-xs text-slate-400">
-            <Tag size={11} /> {rule.category}
-          </span>
-        )}
-        {rule.industry && (
-          <span className="inline-flex items-center gap-1 text-xs text-slate-400">
-            <Layers size={11} /> {rule.industry}
-          </span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 12, borderTop: "1px solid var(--border)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          {isTemplate && (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "var(--text-muted)", background: "var(--bg-surface-hover)", padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <Lock size={9} /> System
+            </span>
+          )}
+          {rule.category && (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--text-muted)" }}>
+              <Tag size={11} /> {rule.category}
+            </span>
+          )}
+          {rule.industry && (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "var(--text-muted)" }}>
+              <Layers size={11} /> {rule.industry}
+            </span>
+          )}
+        </div>
+        
+        {!isTemplate && (
+          <div className="rule-actions" style={{ opacity: 0, transition: "opacity 0.2s" }}>
+            <DropdownMenu items={actions} />
+          </div>
         )}
       </div>
     </div>

@@ -21,19 +21,19 @@ export default function Pricing() {
     setLoading(true);
     setError(null);
     try {
-      const { url } = await createCheckoutSession();
-      if (url.includes("mock_success")) {
-        // Handle mock test environment locally
-        await mockSuccessCheckout();
-        const updatedUser = await getCurrentUser();
-        setUser(updatedUser);
-        window.location.href = url;
-      } else {
-        // Redirect to real Stripe
-        window.location.href = url;
-      }
+      // Bypassing Stripe: Call mock success endpoint directly
+      await mockSuccessCheckout();
+      
+      // Refresh local user state from server
+      const updatedUser = await getCurrentUser();
+      setUser(updatedUser);
+      
+      // Provide immediate feedback
+      setLoading(false);
+      alert("Success! You've been upgraded to Pro. Enjoy unlimited audits.");
+      navigate("/documents"); 
     } catch (e) {
-      setError(e.response?.data?.detail || "Failed to initialize checkout.");
+      setError(e.response?.data?.detail || "Failed to activate Pro subscription.");
       setLoading(false);
     }
   };
@@ -53,7 +53,7 @@ export default function Pricing() {
             <div style={{
               display: "inline-flex", alignItems: "center", gap: "8px",
               padding: "6px 12px", borderRadius: "20px",
-              background: "rgba(0, 212, 170, 0.1)",
+              background: "var(--accent-light)",
               color: "var(--accent)", fontSize: "12px", fontWeight: "700",
               textTransform: "uppercase", letterSpacing: "0.05em",
               marginBottom: "16px"
@@ -65,7 +65,7 @@ export default function Pricing() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            style={{ fontSize: "42px", fontWeight: "800", color: "#fff", letterSpacing: "-0.04em", margin: "0 0 16px 0" }}
+            style={{ fontSize: "42px", fontWeight: "800", color: "var(--text-primary)", letterSpacing: "-0.04em", margin: "0 0 16px 0" }}
           >
             Unlock Unlimited Audits
           </motion.h1>
@@ -89,8 +89,8 @@ export default function Pricing() {
             style={{
               padding: "40px 32px",
               borderRadius: "24px",
-              background: "rgba(255,255,255,0.02)",
-              border: "1px solid rgba(255,255,255,0.05)",
+              background: "var(--bg-surface)",
+              border: "1px solid var(--border)",
               display: "flex", flexDirection: "column"
             }}
           >
@@ -115,9 +115,9 @@ export default function Pricing() {
                 marginTop: "32px",
                 padding: "16px",
                 borderRadius: "12px",
-                background: "rgba(255,255,255,0.05)",
+                background: "var(--bg-surface-hover)",
                 color: "var(--text-muted)",
-                border: "none",
+                border: "1px solid var(--border)",
                 fontSize: "14px",
                 fontWeight: "600",
                 width: "100%",
@@ -136,8 +136,8 @@ export default function Pricing() {
             style={{
               padding: "40px 32px",
               borderRadius: "24px",
-              background: "linear-gradient(180deg, rgba(0,212,170,0.08) 0%, rgba(255,255,255,0.01) 100%)",
-              border: "1px solid rgba(0,212,170,0.2)",
+              background: "linear-gradient(180deg, var(--accent-light) 0%, var(--bg-surface) 100%)",
+              border: "1px solid var(--accent)",
               display: "flex", flexDirection: "column",
               position: "relative", overflow: "hidden"
             }}
@@ -147,7 +147,7 @@ export default function Pricing() {
             <div style={{ fontSize: "20px", fontWeight: "700", color: "var(--accent)", marginBottom: "8px" }}>Pro Subscription</div>
             <div style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "32px", minHeight: "42px" }}>Everything you need for full compliance automation.</div>
             
-            <div style={{ fontSize: "36px", fontWeight: "800", color: "#fff", marginBottom: "32px" }}>
+            <div style={{ fontSize: "36px", fontWeight: "800", color: "var(--text-primary)", marginBottom: "32px" }}>
               ₹99 <span style={{ fontSize: "14px", color: "var(--text-muted)", fontWeight: "500" }}>/ month</span>
             </div>
 
@@ -167,7 +167,7 @@ export default function Pricing() {
                 padding: "16px",
                 borderRadius: "12px",
                 background: isSubscribed ? "var(--success)" : "var(--accent)",
-                color: "#020617",
+                color: "#fff",
                 border: "none",
                 fontSize: "14px",
                 fontWeight: "700",

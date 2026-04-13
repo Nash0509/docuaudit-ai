@@ -4,14 +4,15 @@ import useStore from "../utils/Store";
 import { loginUser, registerUser, loginGuest } from "../services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldCheck, Mail, Lock, ArrowRight, User, Loader2 } from "lucide-react";
+import useMediaQuery from "../utils/useMediaQuery";
 
 function InputField({ label, type, value, onChange, placeholder, icon: Icon }) {
   const [focused, setFocused] = useState(false);
   return (
-    <div>
-      <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>
-      <div className="relative">
-        <Icon size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+    <div style={{ marginBottom: 16 }}>
+      <label style={{ display: "block", fontSize: 14, fontWeight: 500, color: "var(--text-primary)", marginBottom: 6 }}>{label}</label>
+      <div style={{ position: "relative" }}>
+        <Icon size={15} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)", pointerEvents: "none" }} />
         <input
           type={type}
           value={value}
@@ -20,10 +21,13 @@ function InputField({ label, type, value, onChange, placeholder, icon: Icon }) {
           required
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className={`w-full pl-10 pr-4 h-11 rounded-lg border text-sm text-slate-900 bg-white outline-none transition-all placeholder:text-slate-400
-            ${focused ? "border-indigo-400 ring-3 ring-indigo-50" : "border-slate-300 hover:border-slate-400"}
-          `}
-          style={{ fontFamily: "inherit" }}
+          style={{
+            width: "100%", height: 44, paddingLeft: 40, paddingRight: 16, borderRadius: 8,
+            border: `1px solid ${focused ? "var(--accent)" : "var(--border)"}`,
+            fontSize: 14, color: "var(--text-primary)", background: "var(--bg-surface)", outline: "none",
+            boxShadow: focused ? "0 0 0 3px var(--accent-light)" : "none", transition: "all 0.2s",
+            fontFamily: "inherit", boxSizing: "border-box"
+          }}
         />
       </div>
     </div>
@@ -40,6 +44,7 @@ function Auth() {
 
   const navigate = useNavigate();
   const setToken = useStore((state) => state.setToken);
+  const isMobile = useMediaQuery("(max-width: 1024px)");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,61 +80,65 @@ function Auth() {
   const isSuccess = error && error.includes("created");
 
   return (
-    <div className="min-h-screen flex bg-slate-50">
+    <div style={{ minHeight: "100vh", display: "flex", background: "var(--bg-base)" }}>
       {/* Left Branding Panel — hidden on small screens */}
-      <div className="hidden lg:flex flex-col justify-between w-[45%] bg-indigo-600 p-12 text-white">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
-            <ShieldCheck size={18} color="white" strokeWidth={2.5} />
+      {!isMobile && (
+        <div style={{ width: "45%", background: "linear-gradient(135deg, var(--accent) 0%, #3730A3 100%)", padding: 48, color: "#fff", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 12, background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <ShieldCheck size={18} color="white" strokeWidth={2.5} />
+            </div>
+            <span style={{ fontWeight: 700, fontSize: 18, letterSpacing: "-0.02em" }}>DocuAudit AI</span>
           </div>
-          <span className="font-bold text-lg tracking-tight">DocuAudit AI</span>
-        </div>
 
-        <div>
-          <h1 className="text-4xl font-black leading-tight mb-5">
-            AI-powered compliance<br />for legal documents
-          </h1>
-          <p className="text-indigo-200 text-base leading-relaxed mb-8">
-            DocuAudit AI helps legal, compliance, and audit teams analyze contracts at scale with precision AI analysis.
+          <div>
+            <h1 style={{ fontSize: 36, fontWeight: 900, lineHeight: 1.2, margin: "0 0 20px 0" }}>
+              AI-powered compliance<br />for legal documents
+            </h1>
+            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.8)", lineHeight: 1.6, margin: "0 0 32px 0", maxWidth: 400 }}>
+              DocuAudit AI helps legal, compliance, and audit teams analyze contracts at scale with precision AI analysis.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {[
+                "Automated risk detection in seconds",
+                "Clause-level compliance checking",
+                "Export audit reports as PDF",
+              ].map((f) => (
+                <div key={f} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 14, color: "rgba(255,255,255,0.9)" }}>
+                  <div style={{ width: 20, height: 20, borderRadius: "50%", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 12 }}>✓</div>
+                  {f}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", margin: 0 }}>
+            Enterprise-grade security · SOC 2 compliant · Data encrypted at rest
           </p>
-          <div className="space-y-3">
-            {[
-              "Automated risk detection in seconds",
-              "Clause-level compliance checking",
-              "Export audit reports as PDF",
-            ].map((f) => (
-              <div key={f} className="flex items-center gap-3 text-sm text-indigo-100">
-                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-xs">✓</div>
-                {f}
-              </div>
-            ))}
-          </div>
         </div>
-
-        <p className="text-xs text-indigo-300">
-          Enterprise-grade security · SOC 2 compliant · Data encrypted at rest
-        </p>
-      </div>
+      )}
 
       {/* Right Form Panel */}
-      <div className="flex-1 flex items-center justify-center p-6">
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-sm"
+          style={{ width: "100%", maxWidth: 384 }}
         >
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center">
-              <ShieldCheck size={18} color="white" strokeWidth={2.5} />
+          {isMobile && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32, justifyContent: "center" }}>
+              <div style={{ width: 36, height: 36, borderRadius: 12, background: "var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px var(--accent-light)" }}>
+                <ShieldCheck size={18} color="white" strokeWidth={2.5} />
+              </div>
+              <span style={{ fontWeight: 700, fontSize: 18, color: "var(--text-primary)" }}>DocuAudit AI</span>
             </div>
-            <span className="font-bold text-lg text-slate-900">DocuAudit AI</span>
-          </div>
+          )}
 
-          <h2 className="text-2xl font-bold text-slate-900 mb-1">
+          <h2 style={{ fontSize: 24, fontWeight: 700, color: "var(--text-primary)", margin: "0 0 4px 0" }}>
             {isLogin ? "Welcome back" : "Create your account"}
           </h2>
-          <p className="text-sm text-slate-500 mb-7">
+          <p style={{ fontSize: 14, color: "var(--text-muted)", margin: "0 0 28px 0" }}>
             {isLogin ? "Sign in to your compliance workspace." : "Start auditing documents in minutes."}
           </p>
 
@@ -138,19 +147,23 @@ function Auth() {
             {error && (
               <motion.div
                 initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                animate={{ opacity: 1, height: "auto", marginBottom: "20px" }}
+                animate={{ opacity: 1, height: "auto", marginBottom: 20 }}
                 exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                className={`text-sm px-4 py-3 rounded-lg border ${isSuccess
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-red-50 text-red-700 border-red-200"
-                }`}
+                style={{ overflow: "hidden" }}
               >
-                {error}
+                <div style={{
+                  fontSize: 14, padding: "12px 16px", borderRadius: 8,
+                  background: isSuccess ? "var(--success-light)" : "var(--danger-light)",
+                  color: isSuccess ? "var(--success)" : "var(--danger)",
+                  border: `1px solid ${isSuccess ? "var(--success-border)" : "var(--danger-border)"}`
+                }}>
+                  {error}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit}>
             <InputField
               label="Email address"
               type="email"
@@ -171,37 +184,36 @@ function Auth() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-11 rounded-lg bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-colors mt-2"
-              style={{ fontFamily: "inherit" }}
+              className="btn btn-primary"
+              style={{ width: "100%", height: 44, marginTop: 8, padding: 0 }}
             >
-              {loading ? <Loader2 size={16} className="animate-spin" /> : (
+              {loading ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> : (
                 <>{isLogin ? "Sign In" : "Create Account"} <ArrowRight size={15} /></>
               )}
             </button>
           </form>
 
-          <div className="flex items-center gap-3 my-5">
-            <div className="flex-1 h-px bg-slate-200" />
-            <span className="text-xs text-slate-400 uppercase tracking-wide">or</span>
-            <div className="flex-1 h-px bg-slate-200" />
+          <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "20px 0" }}>
+            <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
+            <span style={{ fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>or</span>
+            <div style={{ flex: 1, height: 1, background: "var(--border)" }} />
           </div>
 
           <button
             onClick={handleGuestLogin}
             disabled={guestLoading}
-            className="w-full h-11 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-60 text-slate-700 font-medium text-sm flex items-center justify-center gap-2 transition-colors"
-            style={{ fontFamily: "inherit" }}
+            className="btn"
+            style={{ width: "100%", height: 44, background: "var(--bg-surface)", border: "1px solid var(--border)", color: "var(--text-secondary)", padding: 0 }}
           >
-            {guestLoading ? <Loader2 size={15} className="animate-spin text-slate-400" /> : <User size={15} className="text-slate-400" />}
+            {guestLoading ? <Loader2 size={15} style={{ animation: "spin 1s linear infinite", color: "var(--text-muted)" }} /> : <User size={15} color="var(--text-muted)" />}
             Continue as Guest
           </button>
 
-          <p className="text-center text-sm text-slate-500 mt-6">
+          <p style={{ textAlign: "center", fontSize: 14, color: "var(--text-muted)", marginTop: 24 }}>
             {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
             <button
               onClick={() => { setIsLogin(!isLogin); setError(""); }}
-              className="text-indigo-600 font-semibold hover:text-indigo-700"
-              style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}
+              style={{ color: "var(--accent)", fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}
             >
               {isLogin ? "Sign up" : "Sign in"}
             </button>

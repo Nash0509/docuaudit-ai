@@ -6,7 +6,14 @@ import * as THREE from 'three';
 function TechRings({ riskScore }) {
   const groupRef = useRef();
   
-  const baseColor = riskScore >= 70 ? '#ef4444' : riskScore >= 40 ? '#f59e0b' : '#00d4aa';
+  // Theme-aware color mapping for 3D context
+  const getBaseColor = () => {
+    if (riskScore >= 70) return '#EF4444'; // var(--danger)
+    if (riskScore >= 40) return '#F59E0B'; // var(--warn)
+    return '#10B981'; // var(--success)
+  };
+
+  const baseColor = getBaseColor();
 
   useFrame(({ clock }) => {
     if (groupRef.current) {
@@ -40,7 +47,7 @@ function TechRings({ riskScore }) {
         {/* Outer Ring */}
         <mesh>
           <torusGeometry args={[1.6, 0.01, 16, 100]} />
-          <meshStandardMaterial color="#ffffff" transparent opacity={0.2} />
+          <meshStandardMaterial color="#ffffff" transparent opacity={0.15} />
         </mesh>
 
         {/* Core Core */}
@@ -53,7 +60,6 @@ function TechRings({ riskScore }) {
 }
 
 export default function RiskGlobe({ riskScore = 0 }) {
-  // We keep the component name RiskGlobe for import stability but render TechRings
   return (
     <div style={{ height: "180px", width: "100%", position: "relative" }}>
       <Suspense fallback={
@@ -63,14 +69,13 @@ export default function RiskGlobe({ riskScore = 0 }) {
           color: "var(--text-muted)", fontSize: "12px",
         }}>
           <div style={{ width: "24px", height: "24px", border: "2px solid var(--accent)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
-          Loading...
+          Loading Visualizer...
         </div>
       }>
-        <Canvas camera={{ position: [0, 0, 4.5], fov: 45 }} dpr={[1, 2]}>
-          <color attach="background" args={['transparent']} />
+        <Canvas camera={{ position: [0, 0, 4.5], fov: 45 }} dpr={[1, 2]} alpha={true}>
           <ambientLight intensity={0.5} />
           <directionalLight position={[5, 5, 5]} intensity={1} color="#ffffff" />
-          <pointLight position={[-5, -3, -5]} intensity={1} color={riskScore >= 70 ? '#ef4444' : '#00d4aa'} />
+          <pointLight position={[-5, -3, -5]} intensity={1} color={riskScore >= 70 ? '#EF4444' : '#10B981'} />
           <TechRings riskScore={riskScore} />
           <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
         </Canvas>

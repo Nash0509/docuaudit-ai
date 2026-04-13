@@ -6,47 +6,99 @@ import { User, Mail, Shield, ShieldCheck, Zap, Clock, TrendingUp, Award, ArrowRi
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-function StatCard({ icon: Icon, label, value, color, bg, border, delay }) {
+const S = {
+  hero: {
+    background: "var(--bg-surface)",
+    border: "1px solid var(--border)",
+    borderRadius: 16,
+    padding: "28px 32px",
+    display: "flex",
+    alignItems: "center",
+    gap: 24,
+    boxShadow: "var(--shadow-sm)",
+    marginBottom: 20,
+    flexWrap: "wrap",
+  },
+  avatar: {
+    width: 72, height: 72, borderRadius: 18,
+    background: "linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%)",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    fontSize: 28, fontWeight: 900, color: "#fff",
+    boxShadow: "0 8px 24px var(--accent-light)",
+    flexShrink: 0,
+  },
+  statCard: {
+    background: "var(--bg-surface)", border: "1px solid var(--border)",
+    borderRadius: 14, padding: "20px 24px",
+    boxShadow: "var(--shadow-sm)",
+    transition: "box-shadow 0.2s ease",
+  },
+  iconBox: (bg, border) => ({
+    width: 40, height: 40, borderRadius: 12,
+    background: bg, border: `1px solid ${border}`,
+    display: "flex", alignItems: "center", justifyContent: "center",
+    marginBottom: 12,
+  }),
+  card: {
+    background: "var(--bg-surface)", border: "1px solid var(--border)",
+    borderRadius: 14, padding: "20px 24px",
+    boxShadow: "var(--shadow-sm)",
+  },
+  sectionTitle: { fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 },
+  activityRow: {
+    display: "flex", alignItems: "center", gap: 14,
+    padding: "10px 12px", borderRadius: 10,
+    cursor: "pointer", transition: "background 0.15s",
+    marginBottom: 4,
+  },
+};
+
+function StatCard({ icon: Icon, label, value, iconColor, iconBg, iconBorder, delay }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-sm transition-all"
-    >
-      <div className={`w-10 h-10 rounded-xl ${bg} border ${border} flex items-center justify-center mb-3`}>
-        <Icon size={18} style={{ color }} />
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }} style={S.statCard}>
+      <div style={S.iconBox(iconBg, iconBorder)}>
+        <Icon size={18} style={{ color: iconColor }} />
       </div>
-      <div className="text-2xl font-black text-slate-900 mb-1">{value}</div>
-      <div className="text-xs font-medium text-slate-400 uppercase tracking-wide leading-tight">{label}</div>
+      <div style={{ fontSize: 32, fontWeight: 900, color: "var(--text-primary)", lineHeight: 1, marginBottom: 4 }}>{value}</div>
+      <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</div>
     </motion.div>
   );
 }
 
-function ActivityItem({ item }) {
-  const navigate = useNavigate();
-  const color = item.risk_score >= 70 ? "#EF4444" : item.risk_score >= 40 ? "#F59E0B" : "#10B981";
-  const label = item.risk_score >= 70 ? "High" : item.risk_score >= 40 ? "Medium" : "Low";
+function ActivityItem({ item, navigate }) {
+  const score = item.risk_score || 0;
+  
+  const getSeverity = (score) => {
+    if (score >= 70) return { label: "High", colorStr: "danger" };
+    if (score >= 40) return { label: "Med", colorStr: "warn" };
+    return { label: "Low", colorStr: "success" };
+  };
+
+  const sev = getSeverity(score);
+  const colorToken = `var(--${sev.colorStr})`;
+  const bgToken = `var(--${sev.colorStr}-light)`;
+  const borderToken = `var(--${sev.colorStr}-border)`;
+
+  const [hovered, setHovered] = useState(false);
 
   return (
     <div
       onClick={() => navigate(`/report/${item.document}`)}
-      className="flex items-center gap-3.5 p-3.5 rounded-xl border border-transparent hover:border-slate-200 hover:bg-slate-50 cursor-pointer transition-all"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ ...S.activityRow, background: hovered ? "var(--bg-surface-hover)" : "transparent" }}
     >
-      <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center flex-shrink-0">
-        <Shield size={16} className="text-indigo-500" />
+      <div style={{ width: 38, height: 38, borderRadius: 10, background: "var(--info-light)", border: "1px solid var(--info-border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <Shield size={15} style={{ color: "var(--info)" }} />
       </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold text-slate-800 truncate">{item.filename || "Document"}</div>
-        <div className="text-xs text-slate-400 mt-0.5">
-          {new Date(item.uploaded_at).toLocaleDateString()} · {item.rules_checked} rules checked
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.filename || "Document"}</div>
+        <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+          {item.uploaded_at ? new Date(item.uploaded_at).toLocaleDateString() : "—"} · {item.rules_checked || 0} rules
         </div>
       </div>
-      <span
-        className="text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0"
-        style={{ background: `${color}12`, color, border: `1px solid ${color}30` }}
-      >
-        {label} · {item.risk_score}
+      <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: bgToken, color: colorToken, border: `1px solid ${borderToken}`, flexShrink: 0 }}>
+        {sev.label} · {score}
       </span>
     </div>
   );
@@ -66,11 +118,7 @@ export default function Profile() {
         const [userData, auditData] = await Promise.all([getCurrentUser(), getAllAuditResult()]);
         setUser(userData);
         const reports = Array.isArray(auditData) ? auditData : (auditData.results || []);
-        setStats({
-          total: reports.length,
-          highRisk: reports.filter((r) => (r.risk_score || 0) >= 70).length,
-          latest: reports.slice(0, 3),
-        });
+        setStats({ total: reports.length, highRisk: reports.filter(r => r.risk_score >= 70).length, latest: reports.slice(0, 4) });
       } catch (e) { console.error(e); }
       finally { setLoading(false); }
     })();
@@ -78,9 +126,9 @@ export default function Profile() {
 
   if (loading) return (
     <Layout>
-      <div className="flex items-center justify-center h-64 gap-2 text-slate-400">
-        <Loader2 size={18} className="animate-spin text-indigo-500" />
-        <span className="text-sm">Loading profile...</span>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300, gap: 10, color: "var(--text-muted)" }}>
+        <Loader2 size={18} style={{ animation: "spin 1s linear infinite", color: "var(--accent)" }} />
+        <span style={{ fontSize: 14 }}>Loading profile...</span>
       </div>
     </Layout>
   );
@@ -89,124 +137,103 @@ export default function Profile() {
 
   return (
     <Layout>
-      <div className="max-w-4xl space-y-6 pb-10">
+      <div style={{ maxWidth: 960, margin: "0 auto", paddingBottom: 40 }}>
         {/* Hero Banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white border border-slate-200 rounded-2xl p-7 flex items-center gap-6 shadow-sm"
-        >
-          <div className="w-20 h-20 rounded-2xl bg-indigo-600 flex items-center justify-center text-3xl font-black text-white flex-shrink-0 shadow-lg shadow-indigo-200">
-            {initials}
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-              <h1 className="text-xl font-bold text-slate-900">{user?.name || "DocuAudit User"}</h1>
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} style={S.hero}>
+          <div style={S.avatar}>{initials}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em" }}>
+                {user?.name || "DocuAudit User"}
+              </span>
               {user?.is_subscribed ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                  <ShieldCheck size={11} /> Pro Subscriber
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 20, background: "var(--info-light)", border: "1px solid var(--info-border)", fontSize: 11, fontWeight: 700, color: "var(--info)" }}>
+                  <ShieldCheck size={10} /> Pro Subscriber
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                  <Zap size={11} /> Free Tier
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 20, background: "var(--warn-light)", border: "1px solid var(--warn-border)", fontSize: 11, fontWeight: 700, color: "var(--warn)" }}>
+                  <Zap size={10} /> Free Tier
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-4 text-sm text-slate-500 flex-wrap">
-              <span className="flex items-center gap-1.5"><Mail size={13} className="text-indigo-400" />{user?.email}</span>
-              <span className="flex items-center gap-1.5"><Shield size={13} className="text-emerald-500" />Verified Auditor</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "var(--text-secondary)" }}>
+                <Mail size={13} style={{ color: "var(--accent)" }} /> {user?.email}
+              </span>
+              <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "var(--text-secondary)" }}>
+                <Shield size={13} style={{ color: "var(--success)" }} /> Verified Auditor
+              </span>
             </div>
           </div>
           {!user?.is_subscribed && (
-            <button
-              onClick={() => navigate("/pricing")}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors flex-shrink-0"
-              style={{ fontFamily: "inherit" }}
-            >
+            <button onClick={() => navigate("/pricing")} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 18px", borderRadius: 10, background: "var(--accent)", color: "#fff", fontSize: 13, fontWeight: 700, border: "none", cursor: "pointer", boxShadow: "var(--shadow-sm)", flexShrink: 0 }}>
               <Zap size={14} /> Upgrade to Pro
             </button>
           )}
         </motion.div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
-          <StatCard icon={TrendingUp} label="Total Audits Completed" value={stats.total} color="#6366F1" bg="bg-indigo-50" border="border-indigo-100" delay={0.1} />
-          <StatCard icon={Zap} label="High Risk Clauses Found" value={stats.highRisk} color="#EF4444" bg="bg-red-50" border="border-red-100" delay={0.15} />
-          <StatCard icon={Award} label="Compliance Level" value="Silver" color="#F59E0B" bg="bg-amber-50" border="border-amber-100" delay={0.2} />
+        {/* Stat Cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 20 }}>
+          <StatCard icon={TrendingUp} label="Total Audits" value={stats.total} iconColor="var(--info)" iconBg="var(--info-light)" iconBorder="var(--info-border)" delay={0.08} />
+          <StatCard icon={Zap} label="High Risk Found" value={stats.highRisk} iconColor="var(--danger)" iconBg="var(--danger-light)" iconBorder="var(--danger-border)" delay={0.14} />
+          <StatCard icon={Award} label="Compliance Level" value="Silver" iconColor="var(--warn)" iconBg="var(--warn-light)" iconBorder="var(--warn-border)" delay={0.20} />
         </div>
 
         {/* Bottom Row */}
-        <div className="grid grid-cols-3 gap-5">
-          {/* Recent Activity */}
-          <div className="col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Clock size={15} className="text-indigo-500" />
-                <h2 className="text-sm font-bold text-slate-800">Recent Audits</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 16 }}>
+          {/* Recent Audits */}
+          <div style={S.card}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={S.sectionTitle}>
+                <Clock size={14} style={{ color: "var(--info)" }} /> Recent Audits
               </div>
-              <button
-                onClick={() => navigate("/reports")}
-                className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
-                style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}
-              >
-                View all <ArrowRight size={12} />
+              <button onClick={() => navigate("/reports")} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: "pointer" }}>
+                View all <ArrowRight size={11} />
               </button>
             </div>
             {stats.latest.length === 0 ? (
-              <div className="text-center py-8 text-sm text-slate-400">No audit history yet.</div>
+              <div style={{ textAlign: "center", padding: "32px 0", fontSize: 13, color: "var(--text-muted)" }}>No audit history yet.</div>
             ) : (
-              <div className="space-y-1.5">
-                {stats.latest.map((item, i) => <ActivityItem key={i} item={item} />)}
-              </div>
+              stats.latest.map((item, i) => <ActivityItem key={i} item={item} navigate={navigate} />)
             )}
           </div>
 
-          {/* Side Cards */}
-          <div className="space-y-4">
+          {/* Side Column */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {/* Security */}
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-3">
-                <Shield size={14} className="text-indigo-500" />
-                <h3 className="text-sm font-bold text-slate-800">Security Health</h3>
-              </div>
-              <div className="mb-3">
-                <div className="flex items-center justify-between text-xs mb-1.5">
-                  <span className="text-slate-500">Audit Visibility</span>
-                  <span className="font-semibold text-emerald-600">Secured</span>
+            <div style={S.card}>
+              <div style={S.sectionTitle}><Shield size={14} style={{ color: "var(--accent)" }} /> Security Health</div>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, marginBottom: 6 }}>
+                  <span style={{ color: "var(--text-secondary)" }}>Audit Visibility</span>
+                  <span style={{ fontWeight: 700, color: "var(--success)" }}>Secured</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-slate-100">
-                  <div className="h-full w-5/6 rounded-full bg-emerald-500" />
+                <div style={{ height: 6, background: "var(--border)", borderRadius: 3 }}>
+                  <div style={{ height: "100%", width: "85%", background: "linear-gradient(90deg, var(--accent) 0%, var(--accent-light) 100%)", borderRadius: 3 }} />
                 </div>
               </div>
-              <button
-                onClick={() => navigate("/settings")}
-                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
-                style={{ fontFamily: "inherit" }}
-              >
+              <button onClick={() => navigate("/settings")} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px", borderRadius: 8, border: "1px solid var(--border)", background: "transparent", fontSize: 12, fontWeight: 600, color: "var(--text-secondary)", cursor: "pointer" }}>
                 Security Settings <ArrowRight size={11} />
               </button>
             </div>
 
             {/* Usage */}
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-800 mb-1">Usage</h3>
-              <p className="text-xs text-slate-400 mb-3 leading-relaxed">Your current document processing footprint.</p>
-              <div className="space-y-2.5 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Cloud Embeddings</span>
-                  <span className="font-semibold text-slate-700">{stats.total * 5} vectors</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">AI Reasoning</span>
-                  <span className="font-semibold text-emerald-600">Active</span>
-                </div>
+            <div style={S.card}>
+              <div style={S.sectionTitle}>Usage Overview</div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 12, lineHeight: 1.5 }}>Your current processing footprint.</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 16 }}>
+                {[
+                  ["Cloud Embeddings", `${stats.total * 5} vectors`],
+                  ["AI Reasoning", "Active"],
+                ].map(([label, val]) => (
+                  <div key={label} style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+                    <span style={{ color: "var(--text-secondary)" }}>{label}</span>
+                    <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{val}</span>
+                  </div>
+                ))}
               </div>
               {!user?.is_subscribed && (
-                <button
-                  onClick={() => navigate("/pricing")}
-                  className="w-full mt-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-colors"
-                  style={{ fontFamily: "inherit" }}
-                >
+                <button onClick={() => navigate("/pricing")} style={{ width: "100%", padding: "8px", borderRadius: 8, background: "var(--accent)", color: "#fff", fontSize: 12, fontWeight: 700, border: "none", cursor: "pointer" }}>
                   Unlock Unlimited
                 </button>
               )}

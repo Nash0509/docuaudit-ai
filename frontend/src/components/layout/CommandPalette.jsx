@@ -98,13 +98,14 @@ export default function CommandPalette() {
               transition={{ duration: 0.2, ease: "easeOut" }}
               style={{
                 width: '100%', maxWidth: '600px',
-                background: 'rgba(15, 23, 42, 0.95)',
+                background: 'var(--bg-elevated)',
                 border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-xl)',
-                boxShadow: 'var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.05)',
+                boxShadow: 'var(--shadow-elevated)',
                 overflow: 'hidden',
                 pointerEvents: 'auto',
-                display: 'flex', flexDirection: 'column'
+                display: 'flex', flexDirection: 'column',
+                backdropFilter: 'blur(16px)',
               }}
             >
               {/* Input */}
@@ -171,12 +172,13 @@ export default function CommandPalette() {
 }
 
 const kbdStyle = {
-  background: 'var(--bg-surface)',
+  background: 'var(--bg-base)',
   border: '1px solid var(--border)',
   borderRadius: '4px',
   padding: '4px 6px',
   fontSize: '10px',
-  fontWeight: '600',
+  fontWeight: '700',
   color: 'var(--text-muted)',
-  fontFamily: 'monospace'
+  fontFamily: 'var(--font-mono)',
+  boxShadow: '0 1px 0 var(--border)'
 };

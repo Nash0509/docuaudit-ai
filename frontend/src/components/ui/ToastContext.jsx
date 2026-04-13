@@ -57,19 +57,19 @@ function Toast({ toast, onClose }) {
   const icons = {
     success: <CheckCircle2 size={16} color="var(--success)" />,
     error: <AlertCircle size={16} color="var(--danger)" />,
-    info: <Info size={16} color="var(--accent)" />
+    info: <Info size={16} color="var(--info)" />
   };
 
   const bgColors = {
-    success: 'var(--success-dim)',
-    error: 'var(--danger-dim)',
-    info: 'var(--accent-dim)'
+    success: 'var(--success-light)',
+    error: 'var(--danger-light)',
+    info: 'var(--info-light)'
   };
   
   const borderColors = {
-    success: 'rgba(34, 197, 94, 0.2)',
-    error: 'rgba(239, 68, 68, 0.2)',
-    info: 'rgba(0, 212, 170, 0.2)'
+    success: 'var(--success-border)',
+    error: 'var(--danger-border)',
+    info: 'var(--info-border)'
   };
 
   return (
@@ -79,15 +79,14 @@ function Toast({ toast, onClose }) {
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
       layout
       style={{
-        background: 'rgba(15, 23, 42, 0.95)',
-        backdropFilter: 'blur(12px)',
+        background: 'var(--bg-elevated)',
         border: `1px solid var(--border)`,
         borderRadius: 'var(--radius-lg)',
         padding: '14px 16px',
         width: '320px',
         display: 'flex',
         gap: '12px',
-        boxShadow: 'var(--shadow-lg), 0 0 20px rgba(0,0,0,0.4)',
+        boxShadow: 'var(--shadow-elevated)',
         pointerEvents: 'auto',
       }}
     >
@@ -103,7 +102,7 @@ function Toast({ toast, onClose }) {
       </div>
       
       <div style={{ flex: 1, minWidth: 0, paddingTop: '4px' }}>
-        <h4 style={{ margin: '0 0 4px', fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>
+        <h4 style={{ margin: '0 0 2px', fontSize: '13px', fontWeight: '600', color: 'var(--text-primary)' }}>
           {toast.title}
         </h4>
         {toast.description && (
@@ -123,7 +122,13 @@ function Toast({ toast, onClose }) {
           padding: '4px',
           height: 'fit-content',
           borderRadius: '4px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginTop: '2px'
         }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-surface-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
       >
         <X size={14} />
       </button>

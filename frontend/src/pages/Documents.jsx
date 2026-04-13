@@ -31,43 +31,40 @@ export default function Documents() {
 
   return (
     <Layout>
-      {/* Page Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <FolderOpen size={18} className="text-indigo-500" />
-            <h1 className="text-lg font-bold text-slate-900">Document Library</h1>
+      <div style={{ maxWidth: 1100, margin: "0 auto", paddingBottom: 40 }}>
+        {/* Page Header */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 24 }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <FolderOpen size={18} style={{ color: "var(--info)" }} />
+              <h1 className="page-title">Document Library</h1>
+            </div>
+            <p className="page-sub">Manage and audit your regulatory contracts and legal documents.</p>
           </div>
-          <p className="text-sm text-slate-500">Manage and audit your regulatory contracts and legal documents.</p>
+          <div>
+            <input
+              type="file" ref={fileInputRef} onChange={handleFileChange}
+              accept=".pdf" style={{ display: "none" }}
+            />
+            <button onClick={handleUploadClick} className="btn btn-primary" style={{ padding: "10px 16px" }}>
+              <FileUp size={15} /> Upload Contract
+            </button>
+          </div>
         </div>
-        <div>
-          <input
-            type="file" ref={fileInputRef} onChange={handleFileChange}
-            accept=".pdf" style={{ display: "none" }}
-          />
-          <button
-            onClick={handleUploadClick}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-sm"
-            style={{ fontFamily: "inherit" }}
-          >
-            <FileUp size={15} />
-            Upload Contract
-          </button>
-        </div>
+
+        <DocumentTable
+          variant="documents"
+          refresh={refreshKey}
+          onUploadAction={handleUploadClick}
+        />
+
+        <UploadModal
+          isOpen={modalOpen}
+          file={activeFile}
+          onClose={handleUploadClose}
+          onSuccess={handleUploadSuccess}
+        />
       </div>
-
-      <DocumentTable
-        variant="documents"
-        refresh={refreshKey}
-        onUploadAction={handleUploadClick}
-      />
-
-      <UploadModal
-        isOpen={modalOpen}
-        file={activeFile}
-        onClose={handleUploadClose}
-        onSuccess={handleUploadSuccess}
-      />
     </Layout>
   );
 }

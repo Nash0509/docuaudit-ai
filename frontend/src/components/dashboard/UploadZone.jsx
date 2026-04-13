@@ -71,21 +71,22 @@ export default function UploadZone({ onUploadSuccess }) {
         onDragLeave={() => setDrag(false)}
         onDrop={handleDrop}
         style={{
-          background: drag ? "rgba(0,212,170,0.05)" : "rgba(255,255,255,0.015)",
-          border: `2px dashed ${drag ? "var(--accent)" : "rgba(255,255,255,0.08)"}`,
+          background: drag ? "var(--accent-light)" : "var(--bg-surface-hover)",
+          border: `2px dashed ${drag ? "var(--accent)" : "var(--border)"}`,
           borderRadius: "var(--radius-lg)",
           padding: "36px",
           textAlign: "center",
           transition: "all 0.2s ease",
           cursor: "default",
+          opacity: drag ? 1 : 0.8
         }}
       >
         <div style={{
           width: "52px",
           height: "52px",
           borderRadius: "14px",
-          background: drag ? "var(--accent-dim)" : "rgba(255,255,255,0.04)",
-          border: `1px solid ${drag ? "var(--border-accent)" : "var(--border)"}`,
+          background: drag ? "var(--bg-surface)" : "var(--bg-surface)",
+          border: `1px solid ${drag ? "var(--accent)" : "var(--border)"}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -107,14 +108,14 @@ export default function UploadZone({ onUploadSuccess }) {
           display: "inline-flex",
           alignItems: "center",
           gap: "8px",
-          background: "linear-gradient(135deg, #00d4aa, #2563eb)",
+          background: "var(--accent)",
           padding: "9px 22px",
           borderRadius: "var(--radius-md)",
           cursor: "pointer",
           fontWeight: "600",
           fontSize: "13px",
-          color: "#020617",
-          boxShadow: "0 4px 14px rgba(0, 212, 170, 0.2)",
+          color: "white",
+          boxShadow: "var(--shadow-sm)",
           transition: "opacity 0.2s",
         }}>
           <Upload size={15} /> Browse Files
@@ -141,9 +142,10 @@ export default function UploadZone({ onUploadSuccess }) {
               display: "flex",
               alignItems: "center",
               gap: "14px",
+              boxShadow: "var(--shadow-sm)"
             }}
           >
-            <div style={{ background: "rgba(0,212,170,0.1)", padding: "10px", borderRadius: "10px", border: "1px solid var(--border-accent)" }}>
+            <div style={{ background: "var(--accent-light)", padding: "10px", borderRadius: "10px", border: "1px solid var(--info-border)" }}>
               <FileText size={18} color="var(--accent)" />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -158,10 +160,10 @@ export default function UploadZone({ onUploadSuccess }) {
               <label htmlFor="fileUpload" style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-surface-hover)", border: "1px solid var(--border)", borderRadius: "8px", cursor: "pointer" }}>
                 <RefreshCw size={13} color="var(--text-secondary)" />
               </label>
-              <button onClick={removeFile} style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--danger-dim)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "8px", cursor: "pointer", color: "var(--danger)" }}>
+              <button onClick={removeFile} style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--danger-light)", border: "1px solid var(--danger-border)", borderRadius: "8px", cursor: "pointer", color: "var(--danger)" }}>
                 <Trash2 size={13} />
               </button>
-              <button onClick={startUpload} disabled={uploading} style={{ padding: "0 16px", height: "32px", background: uploading ? "rgba(37,99,235,0.5)" : "#2563eb", border: "none", borderRadius: "8px", cursor: uploading ? "not-allowed" : "pointer", color: "white", fontWeight: "600", fontSize: "12px", fontFamily: "inherit" }}>
+              <button onClick={startUpload} disabled={uploading} style={{ padding: "0 16px", height: "32px", background: uploading ? "var(--info-light)" : "var(--info)", border: "none", borderRadius: "8px", cursor: uploading ? "not-allowed" : "pointer", color: "white", fontWeight: "600", fontSize: "12px", fontFamily: "inherit" }}>
                 {uploading ? "Uploading…" : "Upload"}
               </button>
             </div>
@@ -173,7 +175,7 @@ export default function UploadZone({ onUploadSuccess }) {
       <AnimatePresence>
         {uploading && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            style={{ marginTop: "10px", background: "rgba(255,255,255,0.05)", height: "4px", borderRadius: "2px", overflow: "hidden" }}>
+            style={{ marginTop: "10px", background: "var(--bg-surface-hover)", height: "4px", borderRadius: "2px", overflow: "hidden" }}>
             <div style={{ height: "100%", background: "linear-gradient(90deg, transparent, var(--accent), transparent)", backgroundSize: "200px 100%", animation: "shimmer 1.2s infinite", borderRadius: "2px" }} />
           </motion.div>
         )}
@@ -183,13 +185,13 @@ export default function UploadZone({ onUploadSuccess }) {
       <AnimatePresence>
         {success && (
           <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", color: "var(--success)", background: "var(--success-dim)", border: "1px solid rgba(34,197,94,0.15)", padding: "8px 12px", borderRadius: "var(--radius-md)", fontSize: "13px" }}>
+            style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", color: "var(--success)", background: "var(--success-light)", border: "1px solid var(--success-border)", padding: "8px 12px", borderRadius: "var(--radius-md)", fontSize: "13px" }}>
             <CheckCircle size={15} /> Document uploaded and queued for processing
           </motion.div>
         )}
         {error && (
           <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", color: "var(--danger)", background: "var(--danger-dim)", border: "1px solid rgba(239,68,68,0.15)", padding: "8px 12px", borderRadius: "var(--radius-md)", fontSize: "13px" }}>
+            style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", color: "var(--danger)", background: "var(--danger-light)", border: "1px solid var(--danger-border)", padding: "8px 12px", borderRadius: "var(--radius-md)", fontSize: "13px" }}>
             <XCircle size={15} /> Upload failed — check file format or size and try again
           </motion.div>
         )}

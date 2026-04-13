@@ -67,15 +67,18 @@ export default function NotificationPanel({ onClose, onCountChange, onRefetchCou
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -10, scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-      className="absolute top-[calc(100%+10px)] right-0 w-96 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden z-[1000]"
-      style={{ transformOrigin: 'top right' }}
+      style={{
+        position: "absolute", top: "calc(100% + 10px)", right: 0, width: 384, background: "var(--bg-surface)",
+        border: "1px solid var(--border)", borderRadius: 16, boxShadow: "var(--shadow-elevated)",
+        overflow: "hidden", zIndex: 1000, transformOrigin: 'top right'
+      }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-        <div className="flex items-center gap-2.5">
-          <h3 className="text-sm font-bold text-slate-900">Notifications</h3>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid var(--border)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>Notifications</h3>
           {unreadCount > 0 && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600 border border-indigo-200">
+            <span style={{ fontSize: 12, fontWeight: 700, padding: "2px 8px", borderRadius: 12, background: "var(--info-light)", color: "var(--info)", border: "1px solid var(--info-border)" }}>
               {unreadCount}
             </span>
           )}
@@ -83,8 +86,9 @@ export default function NotificationPanel({ onClose, onCountChange, onRefetchCou
         {unreadCount > 0 && (
           <button
             onClick={handleMarkAllRead}
-            className="flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-indigo-600 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-indigo-50 border border-transparent hover:border-indigo-100"
-            style={{ fontFamily: 'inherit' }}
+            style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 500, color: "var(--text-muted)", padding: "6px 10px", borderRadius: 8, background: "transparent", border: "1px solid transparent", cursor: "pointer", transition: "all 0.2s", fontFamily: "inherit" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--info-light)"; e.currentTarget.style.color = "var(--info)"; e.currentTarget.style.borderColor = "var(--info-border)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "transparent"; }}
           >
             <Check size={12} /> Mark all read
           </button>
@@ -92,34 +96,34 @@ export default function NotificationPanel({ onClose, onCountChange, onRefetchCou
       </div>
 
       {/* Body */}
-      <div className="max-h-[400px] overflow-y-auto">
+      <div style={{ maxHeight: 400, overflowY: "auto" }}>
         {loading ? (
-          <div className="p-4 space-y-3">
+          <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <div className="skeleton w-8 h-8 rounded-full flex-shrink-0" />
-                <div className="flex-1 space-y-1.5">
-                  <div className="skeleton h-3 w-3/4 rounded" />
-                  <div className="skeleton h-2.5 w-full rounded" />
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <div className="skeleton" style={{ width: 32, height: 32, borderRadius: "50%", flexShrink: 0 }} />
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div className="skeleton" style={{ height: 12, width: "75%", borderRadius: 4 }} />
+                  <div className="skeleton" style={{ height: 10, width: "100%", borderRadius: 4 }} />
                 </div>
               </div>
             ))}
           </div>
         ) : notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center mb-3">
-              <BellOff size={20} className="text-slate-400" style={{ transform: 'rotate(-5deg)' }} />
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "48px 0", textAlign: "center" }}>
+            <div style={{ width: 48, height: 48, borderRadius: 16, background: "var(--bg-surface-hover)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+              <BellOff size={20} color="var(--text-muted)" style={{ transform: 'rotate(-5deg)' }} />
             </div>
-            <p className="text-sm font-semibold text-slate-700 mb-1">All caught up!</p>
-            <p className="text-xs text-slate-400">No new notifications for now.</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)", margin: "0 0 4px 0" }}>All caught up!</p>
+            <p style={{ fontSize: 12, color: "var(--text-muted)", margin: 0 }}>No new notifications for now.</p>
           </div>
         ) : (
-          <div className="py-2">
+          <div style={{ padding: "8px 0" }}>
             {Object.entries(groups).map(([group, items]) => {
               if (items.length === 0) return null;
               return (
                 <div key={group}>
-                  <div className="px-5 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  <div style={{ padding: "8px 20px", fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     {group}
                   </div>
                   {items.map((n) => (

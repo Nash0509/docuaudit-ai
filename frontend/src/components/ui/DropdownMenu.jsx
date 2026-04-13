@@ -76,13 +76,11 @@ export default function DropdownMenu({ items, trigger, align = 'right', onOpenCh
               top: '100%',
               marginTop: '8px',
               minWidth: '220px',
-              background: 'rgba(15, 23, 42, 0.98)',
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border)',
               borderRadius: '16px',
               padding: '8px',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05)',
+              boxShadow: 'var(--shadow-elevated)',
               zIndex: 1000,
               transformOrigin: align === 'right' ? 'top right' : 'top left'
             }}
@@ -94,7 +92,7 @@ export default function DropdownMenu({ items, trigger, align = 'right', onOpenCh
                     key={`div-${index}`} 
                     style={{ 
                       height: '1px', 
-                      background: 'rgba(255,255,255,0.06)', 
+                      background: 'var(--border)', 
                       margin: '4px -6px' 
                     }} 
                   />
@@ -130,7 +128,7 @@ export default function DropdownMenu({ items, trigger, align = 'right', onOpenCh
                   }}
                   onMouseEnter={(e) => { 
                     if (!item.disabled) {
-                      e.currentTarget.style.background = item.danger ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 255, 255, 0.06)';
+                      e.currentTarget.style.background = item.danger ? 'var(--danger-light)' : 'var(--bg-surface-hover)';
                       e.currentTarget.style.color = item.danger ? 'var(--danger)' : 'var(--text-primary)';
                     }
                   }}
@@ -162,4 +160,3 @@ export default function DropdownMenu({ items, trigger, align = 'right', onOpenCh
     </div>
   );
 }
-

@@ -9,15 +9,15 @@ export default function RuleSelectableCard({ rule, isSelected, onToggle }) {
       whileHover={{ x: 2 }}
       transition={{ duration: 0.15 }}
       style={{
-        background: isSelected ? "rgba(0, 212, 170, 0.06)" : "var(--bg-surface)",
-        border: `1px solid ${isSelected ? "var(--border-accent)" : "var(--border)"}`,
+        background: isSelected ? "var(--accent-light)" : "var(--bg-surface)",
+        border: `1px solid ${isSelected ? "var(--accent)" : "var(--border)"}`,
         borderRadius: "var(--radius-md)",
         padding: "14px 16px",
         display: "flex",
         gap: "14px",
         cursor: "pointer",
         transition: "all 0.2s ease",
-        boxShadow: isSelected ? "var(--shadow-glow)" : "none",
+        boxShadow: isSelected ? "0 0 0 1px var(--accent-light)" : "none",
       }}
     >
       {/* Checkbox icon */}

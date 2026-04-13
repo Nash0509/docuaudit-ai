@@ -1,10 +1,15 @@
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-export default function StatCard({ icon, title, value, trend, trendLabel, color, index = 0 }) {
+export default function StatCard({ icon, title, value, trend, trendLabel, colorVar, index = 0 }) {
   const hasTrend = trend !== undefined && trend !== null;
   const isPositive = trend > 0;
   const isNeutral = trend === 0;
+
+  // colorVar is expected to be like 'var(--accent)' or 'var(--success)'
+  const color = `var(--${colorVar})`;
+  const colorLight = `var(--${colorVar}-light)`;
+  const colorBorder = `var(--${colorVar}-border)`;
 
   return (
     <motion.div
@@ -16,30 +21,34 @@ export default function StatCard({ icon, title, value, trend, trendLabel, color,
         position: "relative",
         padding: "28px",
         borderRadius: "18px",
-        border: "1px solid rgba(255,255,255,0.07)",
-        background: "linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)",
+        border: "1px solid var(--border)",
+        background: "var(--bg-surface)",
+        boxShadow: "var(--shadow-sm)",
         overflow: "hidden",
         cursor: "default",
+        transition: "all 0.2s ease"
       }}
     >
       {/* Ambient background glow */}
       <div style={{
         position: "absolute", inset: 0, pointerEvents: "none",
-        background: `radial-gradient(ellipse 80px 80px at top right, ${color}20, transparent)`,
+        background: `radial-gradient(ellipse 80px 80px at top right, ${colorLight}, transparent)`,
+        opacity: 0.5
       }} />
 
       {/* Top bar accent line */}
       <div style={{
         position: "absolute", top: 0, left: "28px", right: "28px", height: "1px",
-        background: `linear-gradient(90deg, transparent, ${color}60, transparent)`,
+        background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
+        opacity: 0.3
       }} />
 
       {/* Icon + label row */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
         <div style={{
           width: "40px", height: "40px", borderRadius: "12px",
-          background: `${color}18`,
-          border: `1px solid ${color}30`,
+          background: colorLight,
+          border: `1px solid ${colorBorder}`,
           display: "flex", alignItems: "center", justifyContent: "center",
           color: color,
         }}>
@@ -49,11 +58,12 @@ export default function StatCard({ icon, title, value, trend, trendLabel, color,
           <div style={{
             display: "flex", alignItems: "center", gap: "4px",
             padding: "4px 10px", borderRadius: "20px",
-            background: isNeutral ? "rgba(255,255,255,0.05)"
-              : isPositive ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)",
+            background: isNeutral ? "var(--bg-surface-hover)"
+              : isPositive ? "var(--success-light)" : "var(--danger-light)",
             color: isNeutral ? "var(--text-muted)"
               : isPositive ? "var(--success)" : "var(--danger)",
             fontSize: "12px", fontWeight: "600", fontVariantNumeric: "tabular-nums",
+            border: `1px solid ${isNeutral ? 'var(--border)' : isPositive ? 'var(--success-border)' : 'var(--danger-border)'}`
           }}>
             {isNeutral ? <Minus size={11} /> : isPositive ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
             {isPositive ? "+" : ""}{trend}
@@ -63,7 +73,7 @@ export default function StatCard({ icon, title, value, trend, trendLabel, color,
 
       {/* Value */}
       <div style={{
-        fontSize: "36px", fontWeight: "800", color: "#fff",
+        fontSize: "36px", fontWeight: "800", color: "var(--text-primary)",
         letterSpacing: "-0.04em", lineHeight: 1, marginBottom: "6px",
         fontVariantNumeric: "tabular-nums",
       }}>

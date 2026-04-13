@@ -7,11 +7,12 @@ export default function EvidenceBlock({ citation }) {
         color: "var(--text-muted)",
         fontStyle: "italic",
         fontSize: "13px",
-        background: "var(--bg-surface)",
+        background: "var(--bg-surface-hover)",
         border: "1px dashed var(--border)",
         borderRadius: "var(--radius-md)",
-        padding: "14px 16px",
+        padding: "16px",
         marginTop: "8px",
+        textAlign: "center"
       }}>
         No direct clause evidence found in this document.
       </div>
@@ -20,24 +21,25 @@ export default function EvidenceBlock({ citation }) {
 
   return (
     <div style={{
-      background: "rgba(59, 130, 246, 0.04)",
-      border: "1px solid rgba(59, 130, 246, 0.15)",
+      background: "var(--info-light)",
+      border: "1px solid var(--info-border)",
       borderRadius: "var(--radius-md)",
       padding: "16px 16px 16px 20px",
       position: "relative",
       marginTop: "8px",
-      borderLeft: "3px solid #3b82f6",
+      borderLeft: "3px solid var(--info)",
     }}>
-      <Quote size={14} color="rgba(59, 130, 246, 0.3)" style={{ position: "absolute", top: "12px", right: "14px" }} />
+      <Quote size={14} color="var(--info)" style={{ position: "absolute", top: "12px", right: "14px", opacity: 0.2 }} />
       <div style={{
         fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
         fontSize: "12.5px",
         color: "var(--text-secondary)",
         lineHeight: "1.7",
-        maxHeight: "200px",
+        maxHeight: "220px",
         overflowY: "auto",
         whiteSpace: "pre-wrap",
         wordBreak: "break-word",
+        paddingRight: "10px"
       }}>
         {citation}
       </div>

@@ -8,24 +8,26 @@ export default function AIExplanation({ status, confidence, finding }) {
   };
 
   const statusColor = status === "FAIL" ? "var(--danger)" : status === "WARN" ? "var(--warn)" : "var(--success)";
-  const statusBg = status === "FAIL" ? "var(--danger-dim)" : status === "WARN" ? "var(--warn-dim)" : "var(--success-dim)";
+  const statusLight = status === "FAIL" ? "var(--danger-light)" : status === "WARN" ? "var(--warn-light)" : "var(--success-light)";
+  const statusBorder = status === "FAIL" ? "var(--danger-border)" : status === "WARN" ? "var(--warn-border)" : "var(--success-border)";
 
   return (
     <div style={{
-      background: "rgba(0, 212, 170, 0.03)",
-      border: "1px solid var(--border-accent)",
+      background: "var(--bg-surface-hover)",
+      border: `1px solid var(--border)`,
       borderRadius: "var(--radius-md)",
       padding: "16px",
       marginTop: "8px",
+      boxShadow: "var(--shadow-sm)"
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", gap: "12px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: statusColor, fontWeight: "600", fontSize: "13px" }}>
-          <BrainCircuit size={16} />
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", color: statusColor, fontWeight: "600", fontSize: "14px" }}>
+          <BrainCircuit size={17} />
           {getStatusText()}
         </div>
         <div style={{
-          background: statusBg,
-          border: `1px solid ${statusColor}33`,
+          background: statusLight,
+          border: `1px solid ${statusBorder}`,
           color: statusColor,
           padding: "3px 10px",
           borderRadius: "var(--radius-xl)",
@@ -42,8 +44,9 @@ export default function AIExplanation({ status, confidence, finding }) {
         fontSize: "13.5px",
         color: "var(--text-secondary)",
         lineHeight: "1.7",
-        borderLeft: "2px solid var(--border-accent)",
-        paddingLeft: "14px",
+        borderLeft: `2px solid ${statusColor}`,
+        paddingLeft: "16px",
+        marginLeft: "4px"
       }}>
         {finding}
       </p>

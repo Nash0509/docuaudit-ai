@@ -13,7 +13,7 @@ export default function Layout({ children }) {
   const setIsSidebarOpen = useStore((state) => state.setIsSidebarOpen);
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-base)" }}>
       <CommandPalette />
 
       {/* Mobile Backdrop */}
@@ -24,15 +24,19 @@ export default function Layout({ children }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsSidebarOpen(false)}
-            className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-[45]"
+            style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.3)", backdropFilter: "blur(4px)", zIndex: 45 }}
           />
         )}
       </AnimatePresence>
 
-      <Sidebar />
+      <div className="sidebar no-print">
+        <Sidebar />
+      </div>
 
-      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <Topbar />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
+        <div className="topbar no-print">
+          <Topbar />
+        </div>
         <AnimatePresence mode="wait">
           <motion.main
             key={location.pathname}
@@ -40,7 +44,7 @@ export default function Layout({ children }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 4 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className={`flex-1 overflow-y-auto overflow-x-hidden ${isMobile ? "p-5" : "p-8"}`}
+            style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: isMobile ? 20 : 32 }}
           >
             {children}
           </motion.main>

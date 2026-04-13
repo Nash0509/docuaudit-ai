@@ -4,18 +4,18 @@ export default function Skeleton({ width = '100%', height = '20px', borderRadius
   return (
     <motion.div
       initial={{ opacity: 0.5 }}
-      animate={{ opacity: [0.5, 1, 0.5] }}
+      animate={{ opacity: [0.5, 0.8, 0.5] }}
       transition={{ 
         repeat: Infinity, 
-        duration: 1.5, 
+        duration: 2, 
         ease: "easeInOut" 
       }}
       style={{
         width,
         height,
         borderRadius,
-        background: 'rgba(255,255,255,0.04)',
-        border: '1px solid rgba(255,255,255,0.02)',
+        background: 'var(--bg-surface-hover)',
+        border: '1px solid var(--border)',
         overflow: 'hidden',
         position: 'relative',
         ...style
@@ -27,8 +27,8 @@ export default function Skeleton({ width = '100%', height = '20px', borderRadius
         left: '-100%',
         width: '50%',
         height: '100%',
-        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)',
-        animation: 'shimmer 2s infinite linear'
+        background: 'linear-gradient(90deg, transparent, var(--bg-elevated), transparent)',
+        animation: 'shimmer 2.5s infinite linear'
       }} />
     </motion.div>
   );

@@ -111,7 +111,8 @@ export default function AuditConfigModal({ isOpen, onClose, documentId, onAuditC
                   padding: "24px 28px 20px",
                   display: "flex", justifyContent: "space-between", alignItems: "flex-start",
                   borderBottom: "1px solid var(--border)",
-                  background: "rgba(255,255,255,0.01)",
+                  background: "var(--bg-surface-hover)",
+                  opacity: 0.5
                 }}>
                   <div>
                     <h2 style={{ margin: 0, color: "var(--text-primary)", fontSize: "18px", fontWeight: "700" }}>
@@ -130,13 +131,15 @@ export default function AuditConfigModal({ isOpen, onClose, documentId, onAuditC
                       borderRadius: "var(--radius-md)", cursor: "pointer", color: "var(--text-muted)",
                       transition: "all 0.15s",
                     }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--border-hover)"; e.currentTarget.style.color = "var(--text-primary)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-muted)"; }}
                   >
                     <X size={16} />
                   </button>
                 </div>
 
                 {/* Body */}
-                <div style={{ padding: "0 28px", flex: 1, overflowY: "auto", minHeight: 0 }}>
+                <div style={{ padding: "0 28px", flex: 1, overflowY: "auto", minHeight: 0, background: "var(--bg-surface)" }}>
                   {loadingRules ? (
                     <div style={{ height: "460px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", gap: "12px" }}>
                       <div style={{ width: "20px", height: "20px", border: "2px solid var(--accent)", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
@@ -155,7 +158,7 @@ export default function AuditConfigModal({ isOpen, onClose, documentId, onAuditC
                 <div style={{
                   padding: "16px 28px",
                   borderTop: "1px solid var(--border)",
-                  background: "rgba(0,0,0,0.15)",
+                  background: "var(--bg-surface-hover)",
                   display: "flex", justifyContent: "space-between", alignItems: "center",
                 }}>
                   <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>

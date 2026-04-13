@@ -10,11 +10,11 @@ import useMediaQuery from "../utils/useMediaQuery";
 
 function SkeletonCard() {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5 space-y-3">
-      <div className="skeleton h-4 w-3/4 rounded" />
-      <div className="skeleton h-3 w-full rounded" />
-      <div className="skeleton h-3 w-5/6 rounded" />
-      <div className="skeleton h-3 w-2/3 rounded mt-2" />
+    <div className="card" style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="skeleton" style={{ height: 16, width: "75%", borderRadius: 4 }} />
+      <div className="skeleton" style={{ height: 12, width: "100%", borderRadius: 4 }} />
+      <div className="skeleton" style={{ height: 12, width: "83%", borderRadius: 4 }} />
+      <div className="skeleton" style={{ height: 12, width: "66%", borderRadius: 4, marginTop: 8 }} />
     </div>
   );
 }
@@ -56,17 +56,19 @@ export default function Rules() {
   const myRules = rules.filter((r) => !r.is_template);
 
   const renderSection = (title, data) => (
-    <section className="mb-8">
-      <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-sm font-semibold text-slate-700">{title}</h2>
-        <span className="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-500">{data.length}</span>
+    <section style={{ marginBottom: 32 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+        <h2 style={{ fontSize: 14, fontWeight: 600, color: "var(--text-secondary)", margin: 0 }}>{title}</h2>
+        <span style={{ padding: "2px 8px", borderRadius: 12, background: "var(--bg-surface-hover)", border: "1px solid var(--border)", fontSize: 12, fontWeight: 600, color: "var(--text-muted)" }}>
+          {data.length}
+        </span>
       </div>
       {data.length === 0 ? (
-        <div className="text-sm text-slate-400 text-center py-8 bg-white border border-dashed border-slate-200 rounded-xl">
+        <div style={{ fontSize: 14, color: "var(--text-muted)", textAlign: "center", padding: "32px 0", background: "var(--bg-surface)", border: "1px dashed var(--border)", borderRadius: 12 }}>
           No rules in this section yet.
         </div>
       ) : (
-        <div className={`grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-2 xl:grid-cols-3"}`}>
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
           {data.map((rule) => (
             <RuleCard key={rule.id} rule={rule} isSystem={!!rule.is_template} onEdit={openModal} onDelete={handleDelete} />
           ))}
@@ -77,42 +79,39 @@ export default function Rules() {
 
   return (
     <Layout>
-      {/* Page Header */}
-      <div className="flex items-start justify-between mb-8">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <ShieldCheck size={18} className="text-indigo-500" />
-            <h1 className="text-lg font-bold text-slate-900">Compliance Rules</h1>
+      <div style={{ maxWidth: 1024, margin: "0 auto", paddingBottom: 40 }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContents: "space-between", marginBottom: 32 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <ShieldCheck size={18} color="var(--info)" />
+              <h1 className="page-title">Compliance Rules</h1>
+            </div>
+            <p className="page-sub">Legal criteria and logic used for document evaluation.</p>
           </div>
-          <p className="text-sm text-slate-500">Legal criteria and logic used for document evaluation.</p>
+          <button onClick={() => openModal()} className="btn btn-primary" style={{ padding: "10px 16px" }}>
+            <Plus size={15} /> Create Rule
+          </button>
         </div>
-        <button
-          onClick={() => openModal()}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors shadow-sm"
-          style={{ fontFamily: "inherit" }}
-        >
-          <Plus size={15} /> Create Rule
-        </button>
+
+        {loading ? (
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+            {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : (
+          <>
+            {renderSection("My Custom Rules", myRules)}
+            {renderSection("Industry Templates", industryRules)}
+            {renderSection("System Defaults", systemRules)}
+          </>
+        )}
+
+        <RuleModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={() => { toast.success("Saved", "Rule saved successfully."); fetchRules(); }}
+          initialData={editingRule}
+        />
       </div>
-
-      {loading ? (
-        <div className={`grid gap-4 ${isMobile ? "grid-cols-1" : "grid-cols-2 xl:grid-cols-3"}`}>
-          {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
-        </div>
-      ) : (
-        <>
-          {renderSection("My Custom Rules", myRules)}
-          {renderSection("Industry Templates", industryRules)}
-          {renderSection("System Defaults", systemRules)}
-        </>
-      )}
-
-      <RuleModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={() => { toast.success("Saved", "Rule saved successfully."); fetchRules(); }}
-        initialData={editingRule}
-      />
     </Layout>
   );
 }

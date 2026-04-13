@@ -1,24 +1,25 @@
 import { Upload, Search } from "lucide-react";
+import Button from "../ui/Button";
 
-export default function DocumentsHeader() {
+export default function DocumentsHeader({ onUploadClick, onSearchChange }) {
   return (
     <div
       style={{
         display: "flex",
-
         justifyContent: "space-between",
-
         alignItems: "center",
-
         marginBottom: "25px",
+        flexWrap: "wrap",
+        gap: "16px"
       }}
     >
       <div>
         <div
           style={{
             fontSize: "26px",
-
             fontWeight: "700",
+            color: "var(--text-primary)",
+            letterSpacing: "-0.02em"
           }}
         >
           Documents
@@ -26,9 +27,9 @@ export default function DocumentsHeader() {
 
         <div
           style={{
-            color: "#64748b",
-
+            color: "var(--text-muted)",
             fontSize: "13px",
+            marginTop: "2px"
           }}
         >
           Manage and audit contracts
@@ -38,75 +39,50 @@ export default function DocumentsHeader() {
       <div
         style={{
           display: "flex",
-
           gap: "12px",
-
           alignItems: "center",
         }}
       >
         {/* SEARCH */}
-
         <div
           style={{
             display: "flex",
-
             alignItems: "center",
-
-            background: "rgba(255,255,255,0.04)",
-
-            padding: "8px 12px",
-
-            borderRadius: "8px",
-
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border)",
+            padding: "0 12px",
+            height: "40px",
+            borderRadius: "var(--radius-md)",
             gap: "8px",
+            transition: "all 0.2s ease"
           }}
+          onFocusIn={(e) => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.boxShadow = "0 0 0 3px var(--accent-light)"; }}
+          onFocusOut={(e) => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.boxShadow = "none"; }}
         >
-          <Search size={16} />
-
+          <Search size={16} color="var(--text-muted)" />
           <input
-            placeholder="Search..."
+            placeholder="Search documents..."
+            onChange={(e) => onSearchChange?.(e.target.value)}
             style={{
               background: "transparent",
-
               border: "none",
-
               outline: "none",
-
-              color: "#e2e8f0",
-
-              width: "160px",
+              color: "var(--text-primary)",
+              fontSize: "14px",
+              width: "180px",
+              fontFamily: "inherit"
             }}
           />
         </div>
 
         {/* UPLOAD BUTTON */}
-
-        <button
-          style={{
-            display: "flex",
-
-            alignItems: "center",
-
-            gap: "8px",
-
-            background: "linear-gradient(135deg,#00d4aa,#2563eb)",
-
-            border: "none",
-
-            padding: "10px 18px",
-
-            borderRadius: "10px",
-
-            cursor: "pointer",
-
-            fontWeight: "600",
-
-            color: "#020617",
-          }}
+        <Button 
+          variant="primary" 
+          onClick={onUploadClick}
+          icon={<Upload size={16} />}
         >
-          <Upload size={16} />
           Upload
-        </button>
+        </Button>
       </div>
     </div>
   );

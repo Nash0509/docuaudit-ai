@@ -3,20 +3,14 @@ import { useEffect, useState } from "react";
 export default function AILoader() {
   const steps = [
     "Analyzing contract structure",
-
     "Checking payment clauses",
-
     "Reviewing liability terms",
-
     "Evaluating compliance rules",
-
     "Calculating risk score",
-
     "Generating audit report",
   ];
 
   const [index, setIndex] = useState(0);
-
   const [dots, setDots] = useState("");
 
   useEffect(() => {
@@ -30,7 +24,6 @@ export default function AILoader() {
 
     return () => {
       clearInterval(stepTimer);
-
       clearInterval(dotTimer);
     };
   }, []);
@@ -38,23 +31,18 @@ export default function AILoader() {
   return (
     <div
       style={{
-        background: "rgba(17,24,39,0.8)",
-
-        border: "1px solid rgba(255,255,255,0.05)",
-
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border)",
         borderRadius: "16px",
-
         padding: "40px",
-
         textAlign: "center",
+        boxShadow: "var(--shadow-lg)",
       }}
     >
       {/* AI ICON */}
-
       <div
         style={{
           fontSize: "40px",
-
           marginBottom: "16px",
         }}
       >
@@ -62,13 +50,11 @@ export default function AILoader() {
       </div>
 
       {/* TITLE */}
-
       <div
         style={{
           fontSize: "18px",
-
           fontWeight: "600",
-
+          color: "var(--text-primary)",
           marginBottom: "10px",
         }}
       >
@@ -76,15 +62,11 @@ export default function AILoader() {
       </div>
 
       {/* STEP */}
-
       <div
         style={{
           fontSize: "14px",
-
-          color: "#94a3b8",
-
+          color: "var(--text-muted)",
           height: "20px",
-
           transition: "0.3s",
         }}
       >
@@ -93,28 +75,20 @@ export default function AILoader() {
       </div>
 
       {/* PROGRESS BAR */}
-
       <div
         style={{
           marginTop: "22px",
-
           height: "6px",
-
-          background: "rgba(255,255,255,0.05)",
-
+          background: "var(--bg-surface-hover)",
           borderRadius: "6px",
-
           overflow: "hidden",
         }}
       >
         <div
           style={{
             height: "100%",
-
             width: "70%",
-
-            background: "linear-gradient(90deg,#00d4aa,#2563eb)",
-
+            background: "var(--accent)",
             animation: "progress 2s infinite linear",
           }}
         />

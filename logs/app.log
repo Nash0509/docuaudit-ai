@@ -1337,3 +1337,25 @@
 2026-04-12 18:28:13,782 | WARNING | docuaudit | No cloud database detected. Vector search is disabled or running in local mock mode.
 2026-04-12 19:51:14,793 | WARNING | docuaudit | No cloud database detected. Vector search is disabled or running in local mock mode.
 2026-04-12 19:51:43,789 | WARNING | docuaudit | No cloud database detected. Vector search is disabled or running in local mock mode.
+2026-04-13 14:44:35,480 | INFO | docuaudit | Ingesting document 787d3dbb-c26a-45d3-8f92-c9daf36a3699
+2026-04-13 14:44:36,152 | WARNING | docuaudit | Mock storage: Document 787d3dbb-c26a-45d3-8f92-c9daf36a3699 chunks not saved (Cloud mode off)
+2026-04-13 14:55:56,973 | INFO | docuaudit | Ingesting document a51a8db2-2f11-4694-83cd-0fd079233b81
+2026-04-13 14:55:57,012 | WARNING | docuaudit | Mock storage: Document a51a8db2-2f11-4694-83cd-0fd079233b81 chunks not saved (Cloud mode off)
+2026-04-13 14:56:08,858 | INFO | docuaudit | Ingesting document 6be16f93-3cdf-4db3-8b47-e509da0f796b
+2026-04-13 14:56:09,141 | WARNING | docuaudit | Mock storage: Document 6be16f93-3cdf-4db3-8b47-e509da0f796b chunks not saved (Cloud mode off)
+2026-04-13 15:01:08,915 | INFO | docuaudit | Starting audit 787d3dbb-c26a-45d3-8f92-c9daf36a3699 with rule_ids=['68f2c76d-31a3-4832-8d8e-1f229aefb3d8', 'd2e22bac-b14a-4278-9272-0259eedae183', 'bd277ae5-6a98-4d5a-ba9e-676b9d6457a3', '7a2f928c-8f06-4cb4-bcc4-a8d7b534702c', 'dcf3bd26-149e-439b-bb9d-6f928c096306']
+2026-04-13 15:01:08,923 | INFO | docuaudit | Checking rule Payment Terms for 787d3dbb-c26a-45d3-8f92-c9daf36a3699
+2026-04-13 15:01:08,942 | WARNING | docuaudit | Mock search: Returning empty results (Cloud mode off)
+2026-04-13 15:01:10,192 | ERROR | docuaudit | Rule check failed Payment Terms : Expecting value: line 1 column 1 (char 0)
+2026-04-13 15:01:10,193 | INFO | docuaudit | Checking rule Termination Notice for 787d3dbb-c26a-45d3-8f92-c9daf36a3699
+2026-04-13 15:01:10,212 | WARNING | docuaudit | Mock search: Returning empty results (Cloud mode off)
+2026-04-13 15:01:10,688 | INFO | docuaudit | Checking rule IP Ownership for 787d3dbb-c26a-45d3-8f92-c9daf36a3699
+2026-04-13 15:01:10,707 | WARNING | docuaudit | Mock search: Returning empty results (Cloud mode off)
+2026-04-13 15:01:11,338 | INFO | docuaudit | Checking rule Limitation of Liability for 787d3dbb-c26a-45d3-8f92-c9daf36a3699
+2026-04-13 15:01:11,353 | WARNING | docuaudit | Mock search: Returning empty results (Cloud mode off)
+2026-04-13 15:01:11,930 | ERROR | docuaudit | Rule check failed Limitation of Liability : Expecting value: line 1 column 1 (char 0)
+2026-04-13 15:01:11,932 | INFO | docuaudit | Checking rule Data Privacy Compliance for 787d3dbb-c26a-45d3-8f92-c9daf36a3699
+2026-04-13 15:01:11,947 | WARNING | docuaudit | Mock search: Returning empty results (Cloud mode off)
+2026-04-13 15:01:12,486 | INFO | docuaudit | Audit finished 787d3dbb-c26a-45d3-8f92-c9daf36a3699
+2026-04-13 15:01:17,038 | INFO | docuaudit | Email sent to guest@docuaudit.ai: DocuAudit AI: Audit Completed — resume_nishant_me.pdf
+2026-04-13 15:03:55,345 | WARNING | docuaudit | No cloud database detected. Vector search is disabled or running in local mock mode.
