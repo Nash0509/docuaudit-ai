@@ -73,10 +73,10 @@ export default function Topbar() {
           )}
           <div>
             <div style={{ fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.2, fontSize: isMobile ? 15 : 16 }}>
-              {data.name}
+              {data?.name || "Dashboard"}
             </div>
             {!isMobile && (
-              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{data.description}</div>
+              <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>{data?.description || "Audit overview"}</div>
             )}
           </div>
         </div>

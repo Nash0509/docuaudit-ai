@@ -1359,3 +1359,4 @@
 2026-04-13 15:01:12,486 | INFO | docuaudit | Audit finished 787d3dbb-c26a-45d3-8f92-c9daf36a3699
 2026-04-13 15:01:17,038 | INFO | docuaudit | Email sent to guest@docuaudit.ai: DocuAudit AI: Audit Completed — resume_nishant_me.pdf
 2026-04-13 15:03:55,345 | WARNING | docuaudit | No cloud database detected. Vector search is disabled or running in local mock mode.
+2026-04-13 16:41:44,151 | INFO | docuaudit | Email sent to guest@docuaudit.ai: DocuAudit AI: New Compliance Rule Created

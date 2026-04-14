@@ -49,12 +49,15 @@ export default function UploadModal({ isOpen, file, onClose, onSuccess }) {
 
     const stepInterval = setInterval(() => {
       if (currentStep < INGESTION_STEPS.length) {
+        const stepData = INGESTION_STEPS[currentStep];
         setStepIndex(currentStep);
-        setLogs((prev) => [...prev, { 
-          text: INGESTION_STEPS[currentStep].desc, 
-          type: "step",
-          label: INGESTION_STEPS[currentStep].label 
-        }]);
+        if (stepData) {
+          setLogs((prev) => [...prev, { 
+            text: stepData.desc, 
+            type: "step",
+            label: stepData.label 
+          }]);
+        }
         currentStep++;
       }
     }, 800);

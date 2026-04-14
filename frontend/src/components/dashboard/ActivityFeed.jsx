@@ -41,19 +41,23 @@ export default function ActivityFeed() {
   }, []);
 
   const getActionConfig = (activity) => {
+    if (!activity) return { text: 'Unknown Action', subtext: '', icon: <Activity size={14} />, color: 'var(--text-muted)' };
+    
+    const desc = activity.description || "";
+    
     switch(activity.action) {
       case 'UPLOAD':
-        return { text: 'Document Uploaded', subtext: activity.description, icon: <Upload size={14} />, color: 'var(--accent)' };
+        return { text: 'Document Uploaded', subtext: desc, icon: <Upload size={14} />, color: 'var(--accent)' };
       case 'DOCUMENT_DELETED':
-        return { text: 'Document Removed', subtext: activity.description, icon: <Trash2 size={14} />, color: 'var(--danger)' };
+        return { text: 'Document Removed', subtext: desc, icon: <Trash2 size={14} />, color: 'var(--danger)' };
       case 'AUDIT_RUN':
-        return { text: 'Compliance Audit Run', subtext: activity.description, icon: <ShieldCheck size={14} />, color: 'var(--success)' };
+        return { text: 'Compliance Audit Run', subtext: desc, icon: <ShieldCheck size={14} />, color: 'var(--success)' };
       case 'RULE_CREATED':
-        return { text: 'Custom Rule Added', subtext: activity.description, icon: <PlusCircle size={14} />, color: 'var(--info)' };
+        return { text: 'Custom Rule Added', subtext: desc, icon: <PlusCircle size={14} />, color: 'var(--info)' };
       case 'RULE_DELETED':
-        return { text: 'Rule Deleted', subtext: activity.description, icon: <Trash2 size={14} />, color: 'var(--warn)' };
+        return { text: 'Rule Deleted', subtext: desc, icon: <Trash2 size={14} />, color: 'var(--warn)' };
       default:
-        return { text: 'System Action', subtext: activity.description, icon: <Activity size={14} />, color: 'var(--text-muted)' };
+        return { text: 'System Action', subtext: desc, icon: <Activity size={14} />, color: 'var(--text-muted)' };
     }
   };
 
