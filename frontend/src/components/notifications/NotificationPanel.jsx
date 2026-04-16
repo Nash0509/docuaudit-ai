@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Check, BellOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../../utils/Store';
+import useMediaQuery from '../../utils/useMediaQuery';
 import NotificationItem from './NotificationItem';
 import axios from 'axios';
 
@@ -15,6 +16,7 @@ export default function NotificationPanel({ onClose, onCountChange, onRefetchCou
   const [loading, setLoading] = useState(true);
   const token = useStore((state) => state.token);
   const navigate = useNavigate();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   useEffect(() => {
     API.interceptors.request.use((config) => {
@@ -63,16 +65,34 @@ export default function NotificationPanel({ onClose, onCountChange, onRefetchCou
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -10, scale: 0.97 }}
+      initial={isMobile ? { y: "100%", opacity: 0 } : { opacity: 0, y: -10, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -10, scale: 0.97 }}
+      exit={isMobile ? { y: "100%", opacity: 0 } : { opacity: 0, y: -10, scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
       style={{
-        position: "absolute", top: "calc(100% + 10px)", right: 0, width: 384, background: "var(--bg-surface)",
-        border: "1px solid var(--border)", borderRadius: 16, boxShadow: "var(--shadow-elevated)",
-        overflow: "hidden", zIndex: 1000, transformOrigin: 'top right'
+        position: isMobile ? "fixed" : "absolute", 
+        top: isMobile ? "auto" : "calc(100% + 12px)", 
+        bottom: isMobile ? 0 : "auto",
+        right: isMobile ? 0 : 0, 
+        left: isMobile ? 0 : "auto",
+        width: isMobile ? "100%" : 384,
+        maxHeight: isMobile ? "85vh" : "none",
+        background: "var(--bg-surface)",
+        border: isMobile ? "none" : "1px solid var(--border)", 
+        borderTop: isMobile ? "1px solid var(--border)" : "1px solid var(--border)",
+        borderRadius: isMobile ? "24px 24px 0 0" : 20, 
+        boxShadow: isMobile ? "0 -10px 40px rgba(0,0,0,0.15)" : "var(--shadow-lg)",
+        overflow: "hidden", 
+        zIndex: 2000, 
+        transformOrigin: isMobile ? 'bottom center' : 'top right'
       }}
     >
+      {/* Mobile Handle */}
+      {isMobile && (
+        <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}>
+          <div style={{ width: 36, height: 4, borderRadius: 2, background: "var(--border)", opacity: 0.8 }} />
+        </div>
+      )}
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid var(--border)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -83,15 +103,29 @@ export default function NotificationPanel({ onClose, onCountChange, onRefetchCou
             </span>
           )}
         </div>
-        {unreadCount > 0 && (
-          <button
-            onClick={handleMarkAllRead}
-            style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 500, color: "var(--text-muted)", padding: "6px 10px", borderRadius: 8, background: "transparent", border: "1px solid transparent", cursor: "pointer", transition: "all 0.2s", fontFamily: "inherit" }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--info-light)"; e.currentTarget.style.color = "var(--info)"; e.currentTarget.style.borderColor = "var(--info-border)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "transparent"; }}
+        
+        {isMobile ? (
+          <button 
+            onClick={onClose}
+            style={{ background: "var(--bg-surface-hover)", border: "1px solid var(--border)", borderRadius: "50%", width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--text-muted)" }}
           >
-            <Check size={12} /> Mark all read
+            <Check size={14} style={{ transform: "rotate(45deg)", display: "none" }} />
+            <div style={{ position: "relative", width: 12, height: 12 }}>
+              <div style={{ position: "absolute", width: 12, height: 2, background: "currentColor", transform: "rotate(45deg)", top: 5 }} />
+              <div style={{ position: "absolute", width: 12, height: 2, background: "currentColor", transform: "rotate(-45deg)", top: 5 }} />
+            </div>
           </button>
+        ) : (
+          unreadCount > 0 && (
+            <button
+              onClick={handleMarkAllRead}
+              style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 500, color: "var(--text-muted)", padding: "6px 10px", borderRadius: 8, background: "transparent", border: "1px solid transparent", cursor: "pointer", transition: "all 0.2s", fontFamily: "inherit" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "var(--info-light)"; e.currentTarget.style.color = "var(--info)"; e.currentTarget.style.borderColor = "var(--info-border)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--text-muted)"; e.currentTarget.style.borderColor = "transparent"; }}
+            >
+              <Check size={12} /> Mark all read
+            </button>
+          )
         )}
       </div>
 

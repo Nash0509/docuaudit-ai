@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bell } from 'lucide-react';
 import NotificationPanel from './NotificationPanel';
 import { getUnreadCount } from '../../services/api';
+import useMediaQuery from '../../utils/useMediaQuery';
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [pulse, setPulse] = useState(false);
   const prevCountRef = useRef(0);
+  const isMobile = useMediaQuery("(max-width: 768px)");
   const containerRef = useRef(null);
 
   const fetchCount = async () => {
@@ -105,6 +107,21 @@ export default function NotificationBell() {
       </button>
 
       <AnimatePresence>
+        {isOpen && isMobile && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(0,0,0,0.4)",
+              backdropFilter: "blur(4px)",
+              zIndex: 1999
+            }}
+          />
+        )}
         {isOpen && (
           <NotificationPanel
             onClose={() => setIsOpen(false)}

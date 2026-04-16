@@ -19,7 +19,7 @@ const topBarData = {
 
 export default function Topbar() {
   const navigate = useNavigate();
-  const { user, logout, theme, toggleTheme } = useStore();
+  const { user, logout, theme, toggleTheme, toggleSidebar: toggleGlobalSidebar } = useStore();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -27,7 +27,7 @@ export default function Topbar() {
   const path = window.location.pathname.split("/").pop() || "dashboard";
   const data = topBarData[path] || topBarData.dashboard;
 
-  const toggleSidebar = () => window.dispatchEvent(new CustomEvent("toggle-sidebar"));
+  const toggleSidebar = () => toggleGlobalSidebar();
   const initials = user?.email ? user.email.substring(0, 2).toUpperCase() : "AD";
   const handleLogout = () => { logout(); navigate("/auth"); };
 
